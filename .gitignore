@@ -1,0 +1,15 @@
+################################
+## White list based gitignore ##
+################################
+
+# forbidden
+*
+.*
+
+# allowed
+!.gitignore
+!.gitattributes
+!.drone.yml
+!*.c
+!*.md
+!*.h
