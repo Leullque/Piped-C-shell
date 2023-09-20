@@ -1,0 +1,15 @@
+kind: pipeline
+type: ssh
+name: default
+server:
+  host: 111.186.59.59
+  user: drone
+  ssh_key:
+    from_secret: ece482
+steps:
+- name: pre-checks
+  commands:
+  - /home/drone/ci/runner.sh init 
+- name: joj
+  commands:
+  - /home/drone/ci/runner.sh joj
