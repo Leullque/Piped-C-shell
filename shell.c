@@ -58,9 +58,17 @@ int main(){
     while(1){
         printf("mumsh $");//prompt waiting for the input
         unsigned long size = 1024;
-        char* input = (char*)malloc(size);
-        gets(input);
+        //char* input = (char*)malloc(size);
+        char input[size];
+        //fgets(input,sizeof(input),stdin);
+        char ch;
+        int i = 0;
+        while(scanf("%c",&ch) && ch != '\n'){
+            input[i++] = ch;
+        }
+        input[i] = '\0';
         readin(input);
+
 
         files[0] = "driver";
         files[1] = "mumsh";
@@ -70,7 +78,7 @@ int main(){
 
         execute(tot_argv, *argv);
 
-        free(input);
+        //free(input);
 
         return 0;
     }
