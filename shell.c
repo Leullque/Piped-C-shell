@@ -57,7 +57,7 @@ void execute(int tot_argv, char* argv){
 int main(){
     while(1){
         printf("mumsh $");//prompt waiting for the input
-        int size = 1024;
+        unsigned long size = 1024;
         char* input = (char*)malloc(size);
         gets(input);
         readin(input);
@@ -68,7 +68,7 @@ int main(){
 
 
 
-        execute(tot_argv, argv);
+        execute(tot_argv, *argv);
 
         free(input);
 
