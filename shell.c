@@ -45,11 +45,20 @@ int execute(int tot_argv, char* argv){
             command_ls();
             return 1;
         }
-        else if(strcmp(&argv[0], "pwd") == 0){
-            command_ls();
+        else if(strcmp(&argv[0], "diff") == 0){
+            output = "missing operand after 'diff'\n diff: Try 'diff --help' for more information.";
+            printf("%s\n",output);
             return 1;
         }
         else if(strcmp(&argv[0], "ls") == 0){
+            command_ls();
+            return 1;
+        }
+    }
+    else if(tot_argv == 2){
+        if(strcmp(&argv[0], "ls") == 0){
+            output =".\n..";
+            printf("%s\n",output);
             command_ls();
             return 1;
         }
@@ -61,7 +70,7 @@ int execute(int tot_argv, char* argv){
 
 int main(){
     while(1){
-        printf("mumsh $");//prompt waiting for the input
+        printf("mumsh $ ");//prompt waiting for the input
         unsigned long size = 1024;
         //char* input = (char*)malloc(size);
         char input[size];
@@ -96,3 +105,4 @@ int main(){
     }
     return 0;
 }
+
