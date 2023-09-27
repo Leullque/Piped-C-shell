@@ -32,6 +32,12 @@ void command_ls(){
     }
 }
 
+void command_echo(){
+    for(int i = 1; i < tot_argv; i++){
+        printf("%s ",argv[i]);
+    }
+}
+
 int execute(int tot_argv, char* argv){
     char* output = NULL;
     output = argv;
@@ -46,7 +52,7 @@ int execute(int tot_argv, char* argv){
             return 1;
         }
         else if(strcmp(&argv[0], "diff") == 0){
-            output = "missing operand after 'diff'\n diff: Try 'diff --help' for more information.";
+            output = "diff: missing operand after 'diff'\n diff: Try 'diff --help' for more information.";
             printf("%s\n",output);
             return 1;
         }
@@ -55,11 +61,15 @@ int execute(int tot_argv, char* argv){
             return 1;
         }
     }
-    else if(tot_argv == 2){
+    else if(tot_argv >= 2){
         if(strcmp(&argv[0], "ls") == 0){
             output =".\n..";
             printf("%s\n",output);
             command_ls();
+            return 1;
+        }
+        else if(strcmp(&argv[0], "echo") == 0){
+            command_echo();
             return 1;
         }
     }
@@ -105,4 +115,3 @@ int main(){
     }
     return 0;
 }
-
