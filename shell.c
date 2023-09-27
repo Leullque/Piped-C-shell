@@ -32,24 +32,29 @@ void command_ls(){
     }
 }
 
-void execute(int tot_argv, char* argv){
+int execute(int tot_argv, char* argv){
     char* output = NULL;
     output = argv;
     if(tot_argv == 1){
         if(strcmp(&argv[0], "exit") == 0){
             output = "exit";
             printf("%s\n",output);
+            return 0;
         }
         else if(strcmp(&argv[0], "ls") == 0){
             command_ls();
+            return 1;
         }
         else if(strcmp(&argv[0], "pwd") == 0){
             command_ls();
+            return 1;
         }
         else if(strcmp(&argv[0], "ls") == 0){
             command_ls();
+            return 1;
         }
     }
+    return 1;
 }
 
 
@@ -76,10 +81,18 @@ int main(){
 
 
 
-        execute(tot_argv, *argv);
+        int exe = 0;
+        exe = execute(tot_argv, *argv);
+        for(int j = 0; j < 4; j++){
+            strcpy(argv[tot_argv],"\0");
+        }
+        tot_argv = 0;
+        if(exe == 0){
+            return 0;
+        }
+
 
         //free(input);
-
-        return 0;
     }
+    return 0;
 }
