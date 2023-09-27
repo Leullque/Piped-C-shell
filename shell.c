@@ -28,8 +28,7 @@ void readin(char* input){
 
 void command_ls(){
     for(int i = 0; i < tot_file; i++){
-        printf(files[i]);
-        printf("\n");
+        printf("%s\n",files[i]);
     }
 }
 
@@ -39,7 +38,7 @@ void execute(int tot_argv, char* argv){
     if(tot_argv == 1){
         if(strcmp(&argv[0], "exit") == 0){
             output = "exit";
-            printf(output);
+            printf("%s\n",output);
         }
         else if(strcmp(&argv[0], "ls") == 0){
             command_ls();
