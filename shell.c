@@ -61,7 +61,7 @@ void command_cat(char file[]){
             break;
         }
     }
-    if(find = 0){
+    if(find == 0){
         printf("error: no this file");
     }
 }
@@ -83,14 +83,14 @@ void command_output_redirect(char file_name[], char content[],int cases){
             break;
         }
     }
-    if(find = 0){
+    if(find == 0){
         printf("error: no this file");
     }
 }
 
 int execute(){
     char* output = NULL;
-    output = argv;
+    //output = argv;
     if(tot_argv == 1){
         if(strcmp(argv[0], "exit") == 0){
             output = "exit";
