@@ -84,7 +84,14 @@ void command_output_redirect(char file_name[], char content[],int cases){
         }
     }
     if(find == 0){
-        printf("error: no this file");
+        strcpy(files[tot_file].name , file_name);
+        if(cases == 0){
+                strcpy(files[tot_file].content,content);
+        }
+        else{
+                strcat(files[tot_file].content,content);
+        }
+        tot_file += 1;
     }
 }
 
@@ -134,6 +141,10 @@ int execute(){
         }
         else if(strcmp(argv[0], "echo") == 0 && strcmp(argv[2], ">>") == 0){
             command_output_redirect(argv[3],argv[1],1);
+            return 1;
+        }
+        else if(strcmp(argv[0], "echo") == 0 && strcmp(argv[2], ">>") != 0){
+            command_echo();
             return 1;
         }
         else if(strcmp(argv[0], "cat") == 0){
