@@ -38,14 +38,15 @@ void readin(char* input){
 }
 
 void command_ls(){
-    for(int i = 0; i < 3; i++){
-        printf("%s\n",files[i].name);
-    }
     if(tot_file > 3){
-        for(int i = tot_file; i >= 0; i--){
+        for(int i = tot_file; i >= 3; i--){
         printf("%s\n",files[i].name);
         }
     }
+    for(int i = 0; i < 3; i++){
+        printf("%s\n",files[i].name);
+    }
+    
     
 }
 
