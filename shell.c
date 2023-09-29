@@ -39,7 +39,7 @@ void readin(char* input){
 
 void command_ls(){
     if(tot_file > 3){
-        for(int i = tot_file; i >= 3; i--){
+        for(int i = 3; i < tot_file; i++){
         printf("%s\n",files[i].name);
         }
     }
