@@ -1,6 +1,6 @@
 kind: pipeline
 type: ssh
-name: default
+name: ece482-projects
 server:
   host: 111.186.59.59
   user: drone
@@ -10,6 +10,12 @@ steps:
 - name: pre-checks
   commands:
   - /home/drone/ci/runner.sh init 
+- name: code-quality
+  commands:
+  - /home/drone/ci/runner.sh code_quality
 - name: joj
   commands:
   - /home/drone/ci/runner.sh joj
+- name: send-report
+  commands:
+  - /home/drone/ci/runner.sh open_issue
