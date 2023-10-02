@@ -37,7 +37,7 @@ void readin(char* input){
 //    }
 }
 
-void command_ls(){
+void command_ls(void){
     if(tot_file > 3){
         for(int i = 3; i < tot_file; i++){
             printf("%s\n",files[i].name);
@@ -50,7 +50,7 @@ void command_ls(){
 
 }
 
-void command_echo(){
+void command_echo(void){
     for(int i = 1; i < tot_argv; i++){
         printf("%s ",argv[i]);
     }
@@ -123,7 +123,7 @@ void command_input_redirect(char in_file_name[],char out_file_name[],int cases){
 
 }
 
-int execute(){
+int execute(void){
     char* output = NULL;
     //output = argv;
     if(tot_argv == 1){
@@ -204,7 +204,7 @@ int execute(){
 
 
 
-int main(){
+int main(void){
     strcpy(files[0].name , "driver");
     strcpy(files[0].content , "driver");
     strcpy(files[1].name , "mumsh");
