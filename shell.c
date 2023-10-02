@@ -5,7 +5,7 @@
 #define MAX_SIZE 20
 
 
-char argv[5][MAX_SIZE];
+char argv[6][MAX_SIZE];
 int tot_argv = 0;
 
 struct File{
@@ -40,14 +40,14 @@ void readin(char* input){
 void command_ls(){
     if(tot_file > 3){
         for(int i = 3; i < tot_file; i++){
-        printf("%s\n",files[i].name);
+            printf("%s\n",files[i].name);
         }
     }
     for(int i = 0; i < 3; i++){
         printf("%s\n",files[i].name);
     }
-    
-    
+
+
 }
 
 void command_echo(){
@@ -82,6 +82,7 @@ void command_output_redirect(char file_name[], char content[],int cases){
                 strcpy(files[i].content,content);
             }
             else{
+                strcat(files[i].content,"\n");
                 strcat(files[i].content,content);
             }
 
@@ -93,13 +94,33 @@ void command_output_redirect(char file_name[], char content[],int cases){
     if(find == 0){
         strcpy(files[tot_file].name , file_name);
         if(cases == 0){
-                strcpy(files[tot_file].content,content);
+            strcpy(files[tot_file].content,content);
         }
         else{
-                strcat(files[tot_file].content,content);
+            strcat(files[tot_file].content,"\n");
+            strcat(files[tot_file].content,content);
         }
         tot_file += 1;
     }
+}
+
+void command_input_redirect(char in_file_name[],char out_file_name[],int cases){
+    int find = 0;
+    char  content[1024];
+
+    for(int i = 0; i < tot_file; i++){
+        if(strcmp(in_file_name, files[i].name) == 0){
+            strcpy(content,files[i].content);
+            find = 1;
+        }
+    }
+    if(find == 0){
+        printf("error: input file not found");
+    }
+    else{
+        command_output_redirect(out_file_name,content,cases);
+    }
+
 }
 
 int execute(){
@@ -120,7 +141,7 @@ int execute(){
             printf("%s\n",output);
             return 1;
         }
-        else if(strcmp(argv[0], "ls") == 0){
+        else {
             command_ls();
             return 1;
         }
@@ -141,7 +162,13 @@ int execute(){
             return 1;
         }
     }
-    else if(tot_argv >= 3){
+    else if(tot_argv == 3){
+        if(strcmp(argv[0], "cat") == 0 && strcmp(argv[1], "<") == 0) {
+            command_cat(argv[2]);
+            return 1;
+        }
+    }
+    else if(tot_argv >= 4){
         if(strcmp(argv[0], "echo") == 0 && strcmp(argv[2], ">") == 0){
             command_output_redirect(argv[3],argv[1],0);
             return 1;
@@ -150,14 +177,27 @@ int execute(){
             command_output_redirect(argv[3],argv[1],1);
             return 1;
         }
-        else if(strcmp(argv[0], "echo") == 0 && strcmp(argv[2], ">>") != 0){
-            command_echo();
-            return 1;
-        }
         else if(strcmp(argv[0], "cat") == 0){
-            command_cat(argv[1]);
+            char in_file_name[50];
+            char out_file_name[50];
+            int cases = 0;
+            for(int i = 1; i < tot_argv; i++){
+                if(strcmp(argv[i],">") == 0){
+                    strcpy(out_file_name , argv[i+1]);
+                    cases = 0;
+                }
+                else if(strcmp(argv[i],">>") == 0){
+                    strcpy(out_file_name , argv[i+1]);
+                    cases = 1;
+                }
+                else if(strcmp(argv[i],"<") == 0){
+                    strcpy(in_file_name , argv[i+1]);
+                }
+            }
+            command_input_redirect(in_file_name,out_file_name,cases);
             return 1;
         }
+
     }
     return 1;
 }
@@ -199,4 +239,3 @@ int main(){
     }
     return 0;
 }
-
