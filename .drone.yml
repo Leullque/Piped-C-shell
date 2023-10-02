@@ -7,15 +7,18 @@ server:
   ssh_key:
     from_secret: ece482
 steps:
-- name: pre-checks
+- name: ci-install
   commands:
-  - /home/drone/ci/runner.sh init 
+  - /usr/local/bin/ci-install
+- name: repo-checks
+  commands:
+  - ci/runner.sh repo_checks
 - name: code-quality
   commands:
-  - /home/drone/ci/runner.sh code_quality
+  - ci/runner.sh code_quality
 - name: joj
   commands:
-  - /home/drone/ci/runner.sh joj
+  - ci/runner.sh joj
 - name: send-report
   commands:
-  - /home/drone/ci/runner.sh open_issue
+  - ci/runner.sh open_issue
