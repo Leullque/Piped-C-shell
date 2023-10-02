@@ -211,9 +211,9 @@ int main(void){
     strcpy(files[2].name , "mumsh_memory_check");
     while(1){
         printf("mumsh $ ");//prompt waiting for the input
-        unsigned long size = 1024;
+        //unsigned long size = 1024;
         //char* input = (char*)malloc(size);
-        char input[size];
+        char input[1024];
         //fgets(input,sizeof(input),stdin);
         char ch;
         int i = 0;
