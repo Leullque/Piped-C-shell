@@ -73,6 +73,61 @@ void command_cat(char file[]){
     }
 }
 
+char* command_head(char file[]){
+    char* lines = (char*)malloc(10 * sizeof(char));
+    int find = 0;
+    int length = 0;
+
+//    for(int i = 0; i < tot_file; i++){
+//        //printf("file is %s %s",files[i].name,files[i].content);
+//        if(strcmp(file, files[i].name) == 0){
+//            char *sect;
+//            sect = NULL;
+//            sect = strtok(files[i].content, "\n");
+//            while(sect){
+//                strcpy(ten_line[line],sect);
+//                line++;
+//                sect = strtok(NULL,"\n");
+//            }
+//            for(int k = 0; k < line && k < 10; k++){
+//                //printf("%d:",line);
+//                printf(ten_line[k]);
+//                printf("\n");
+//            }
+//            find = 1;
+//            break;
+//        }
+//    }
+    for(int i = 0; i < tot_file; i++){
+        //printf("file is %s %s",files[i].name,files[i].content);
+        if(strcmp(file, files[i].name) == 0){
+            char *sect;
+            sect = NULL;
+            sect = strtok(files[i].content, "\n");
+
+            while(sect){
+                if(length == 0){
+                    strcpy(lines,sect);
+                    strcat(lines,"\n");
+                    length++;
+                }
+                else if(length < 10){
+                    strcat(lines,sect);
+                    strcat(lines,"\n");
+                    length++;
+                }
+                sect = strtok(NULL,"\n");
+            }
+            find = 1;
+            break;
+        }
+    }
+    if(find == 0){
+        printf("error: no this file");
+    }
+    return lines;
+}
+
 void command_output_redirect(char file_name[], char content[],int cases){
     int find = 0;
     for(int i = 0; i < tot_file; i++){
@@ -85,8 +140,6 @@ void command_output_redirect(char file_name[], char content[],int cases){
                 strcat(files[i].content,"\n");
                 strcat(files[i].content,content);
             }
-
-            //printf("change%s",files[i].content);
             find = 1;
             break;
         }
@@ -104,13 +157,19 @@ void command_output_redirect(char file_name[], char content[],int cases){
     }
 }
 
-void command_input_redirect(char in_file_name[],char out_file_name[],int cases){
+void command_input_redirect(char in_file_name[],char out_file_name[],int cases, int length){
     int find = 0;
     char  content[1024];
 
     for(int i = 0; i < tot_file; i++){
         if(strcmp(in_file_name, files[i].name) == 0){
-            strcpy(content,files[i].content);
+            if(length == 100){
+                strcpy(content,files[i].content);
+            }
+            else if(length == 10){
+
+            }
+
             find = 1;
         }
     }
@@ -161,10 +220,22 @@ int execute(void){
             command_cat(argv[1]);
             return 1;
         }
+        else if(strcmp(argv[0], "head") == 0){
+            char* outs = command_head(argv[1]);
+            printf("%s", outs);
+            free(outs);
+            return 1;
+        }
     }
     else if(tot_argv == 3){
         if(strcmp(argv[0], "cat") == 0 && strcmp(argv[1], "<") == 0) {
             command_cat(argv[2]);
+            return 1;
+        }
+        else if(strcmp(argv[0], "head") == 0 && strcmp(argv[1], "<") == 0){
+            char* outs = command_head(argv[2]);
+            printf("%s", outs);
+            free(outs);
             return 1;
         }
     }
@@ -194,7 +265,34 @@ int execute(void){
                     strcpy(in_file_name , argv[i+1]);
                 }
             }
-            command_input_redirect(in_file_name,out_file_name,cases);
+            command_input_redirect(in_file_name,out_file_name,cases,50);
+            return 1;
+        }
+        else if(strcmp(argv[0], "head") == 0){
+            char out_file_name[50];
+            int cases = 0;
+            char* outs;
+            for(int i = 1; i < tot_argv; i++){
+                if(strcmp(argv[i],">") == 0){
+                    strcpy(out_file_name , argv[i+1]);
+                    cases = 0;
+                }
+                else if(strcmp(argv[i],">>") == 0){
+                    strcpy(out_file_name , argv[i+1]);
+                    cases = 1;
+                }
+                else if(strcmp(argv[i],"<") == 0){
+                     outs = command_head(argv[i+1]);
+                    //printf("%s", outs);
+
+                }
+            }
+            command_output_redirect(out_file_name,outs,cases);
+            free(outs);
+            return 1;
+        }
+        else if(strcmp(argv[0], "echo") == 0){
+            command_echo();
             return 1;
         }
 
