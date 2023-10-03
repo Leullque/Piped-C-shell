@@ -13,6 +13,9 @@ steps:
 - name: repo-checks
   commands:
   - ci/runner.sh repo_checks
+- name: compilation
+  commands:
+  - ci/runner.sh compile
 - name: code-quality
   commands:
   - ci/runner.sh code_quality
