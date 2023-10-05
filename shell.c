@@ -5,7 +5,7 @@
 #define MAX_SIZE 20
 
 
-char argv[6][MAX_SIZE];
+char argv[50][MAX_SIZE];
 int tot_argv = 0;
 
 struct File{
@@ -29,6 +29,16 @@ void readin(char* input){
         tot_argv++;
         sect = strtok(NULL," ");
     }
+
+    for(int k = 0; k < tot_argv - 1; k++){
+        if(strcmp(argv[k],">")==0 && strcmp(argv[k+1],">")==0){
+            strcpy(argv[k] , ">>");
+            for(int j = k + 1; j < tot_argv; j++){
+                strcpy(argv[j] , argv[j+1]);
+            }
+            tot_argv--;
+        }
+    }
     //printf("%d",tot_argv);
 //    for(int k = 0; k < tot_argv; k++){
 ////        printf(argv[k]);
@@ -37,16 +47,45 @@ void readin(char* input){
 //    }
 }
 
+void selectionSort(char* arr[], int size) {
+
+}
+
 void command_ls(void){
-    if(tot_file > 3){
-        for(int i = 3; i < tot_file; i++){
-            printf("%s\n",files[i].name);
+    int i, j, minIndex;
+    int index[50];
+    int temp = 0;
+
+    //selection sort for the name alphabetically
+    for (int k = 0; k < 50; ++k) {
+        index[k] = k;
+    }
+    for (i = 0; i < tot_file - 1; i++){
+        minIndex = i;
+        for (j = i + 1; j < tot_file; j++) {
+            if (strcmp(files[index[j]].name, files[index[minIndex]].name) < 0){
+                minIndex = j;
+            }
+        }
+        if (minIndex != i) {
+            temp = index[i];
+            index[i] = index[minIndex];
+            index[minIndex] = temp;
         }
     }
-    for(int i = 0; i < 3; i++){
-        printf("%s\n",files[i].name);
-    }
 
+    //print
+//    if(tot_file > 3){
+//        for(int i = 3; i < tot_file; i++){
+//            printf("%s\n",files[i].name);
+//        }
+//    }
+//    for(int i = 0; i < 3; i++){
+//        printf("%s\n",files[i].name);
+//    }
+    for(int i = 0; i < tot_file; i++){
+        printf("%s\n",files[index[i]].name);
+    }
 
 }
 
@@ -301,7 +340,7 @@ int execute(void){
             return 1;
         }
     }
-    else if(tot_argv >= 4){
+    else if(tot_argv == 4 || tot_argv == 5){
         if(strcmp(argv[0], "echo") == 0 && strcmp(argv[2], ">") == 0){
             command_output_redirect(argv[3],argv[1],0);
             return 1;
@@ -317,6 +356,7 @@ int execute(void){
             for(int i = 1; i < tot_argv; i++){
                 if(strcmp(argv[i],">") == 0){
                     strcpy(out_file_name , argv[i+1]);
+                    printf("find files");
                     cases = 0;
                 }
                 else if(strcmp(argv[i],">>") == 0){
@@ -324,7 +364,7 @@ int execute(void){
                     cases = 1;
                 }
                 else if(strcmp(argv[i],"<") == 0){
-                    outs = command_head(argv[2]);
+                    outs = command_cat(argv[i+1]);
                 }
             }
             command_output_redirect(out_file_name,outs,cases);
@@ -368,7 +408,55 @@ int execute(void){
             command_echo();
             return 1;
         }
-
+    }
+    else{
+        char out_file_name[50];
+        char in_file_name[50];
+        int cases = 0;
+        int start_cases = 0;
+        int start_cat = 0;
+        char* content = (char*)malloc(20 * sizeof(char));
+        for(int i = 0; i < tot_argv;){
+            if(strcmp(argv[i],">") == 0){
+                strcpy(out_file_name , argv[i+1]);
+                cases = 0;
+                i += 2;
+            }
+            else if(strcmp(argv[i],">>") == 0){
+                strcpy(out_file_name , argv[i+1]);
+                cases = 1;
+                i += 2;
+            }
+            else if(strcmp(argv[i],"<") == 0){
+                strcpy(in_file_name , argv[i+1]);
+                i += 2;
+            }
+            else if(strcmp(argv[i],"cat") == 0){
+                start_cat = 1;
+                i++;
+            }
+            else if(start_cat == 1){
+                if(start_cases == 0){
+                    char* temp = command_cat(argv[i]);
+                    strcpy(content,temp);
+                    free(temp);
+                    start_cases = 1;
+                }
+                else{
+                    char* temp = command_cat(argv[i]);
+                    strcat(content,"\n");
+                    strcat(content,temp);
+                    free(temp);
+                }
+                i++;
+            }
+            else{
+                i++;
+            }
+        }
+        command_output_redirect(out_file_name, content, cases);
+        free(content);
+        return 1;
     }
     return 1;
 }
@@ -389,12 +477,18 @@ int main(void){
         char ch;
         int i = 0;
         while(scanf("%c",&ch) && ch != '\n'){
-            input[i++] = ch;
+            if(ch == '>' || ch == '<'){
+                input[i++] = ' ';
+                input[i++] = ch;
+                input[i++] = ' ';
+            }
+            else{
+                input[i++] = ch;
+            }
         }
         input[i] = '\0';
         readin(input);
-
-
+        //printf("get argv%d",tot_argv);
 
 
         int exe = 0;
@@ -410,4 +504,5 @@ int main(void){
     }
     return 0;
 }
+
 
