@@ -345,7 +345,7 @@ char* execute(void){
         command_output_redirect(out_file_name,output,cases);
     }
     else{
-        printf("%s",output);
+        printf("%s\n",output);
     }
     return output;
 }
