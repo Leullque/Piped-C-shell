@@ -72,14 +72,6 @@ void command_ls(void){
     }
 
     //print
-//    if(tot_file > 3){
-//        for(int i = 3; i < tot_file; i++){
-//            printf("%s\n",files[i].name);
-//        }
-//    }
-//    for(int i = 0; i < 3; i++){
-//        printf("%s\n",files[i].name);
-//    }
     for(int k = 0; k < tot_file; k++){
         printf("%s\n",files[index[k]].name);
     }
@@ -349,7 +341,6 @@ int execute(void){
             for(int i = 1; i < tot_argv; i++){
                 if(strcmp(argv[i],">") == 0){
                     strcpy(out_file_name , argv[i+1]);
-                    printf("find files");
                     cases = 0;
                 }
                 else if(strcmp(argv[i],">>") == 0){
@@ -379,7 +370,6 @@ int execute(void){
                 }
                 else if(strcmp(argv[i],"<") == 0){
                      outs = command_head(argv[i+1]);
-                    //printf("%s", outs);
                 }
             }
             command_output_redirect(out_file_name,outs,cases);
