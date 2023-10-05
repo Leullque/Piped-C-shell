@@ -80,8 +80,8 @@ void command_ls(void){
 //    for(int i = 0; i < 3; i++){
 //        printf("%s\n",files[i].name);
 //    }
-    for(int i = 0; i < tot_file; i++){
-        printf("%s\n",files[index[i]].name);
+    for(int k = 0; k < tot_file; k++){
+        printf("%s\n",files[index[k]].name);
     }
 
 }
@@ -92,22 +92,7 @@ void command_echo(void){
     }
 }
 
-//void command_cat(char file[]){
-//    //printf("test:%s",file);
-//    int find = 0;
-//    for(int i = 0; i < tot_file; i++){
-//
-//        //printf("file is %s %s",files[i].name,files[i].content);
-//        if(strcmp(file, files[i].name) == 0){
-//            printf("%s ",files[i].content);
-//            find = 1;
-//            break;
-//        }
-//    }
-//    if(find == 0){
-//        printf("error: no this file");
-//    }
-//}
+
 char* command_cat(char file[]){
     char* lines = (char*)malloc(30 * sizeof(char));
     int find = 0;
@@ -337,6 +322,17 @@ int execute(void){
             return 1;
         }
     }
+    else if(strcmp(argv[0], "diff") == 0){
+            for(int i = 1; i < tot_argv; i++){
+                if(strcmp(argv[i],"<") == 0){
+                    char* outs = command_diff(argv[i-1],argv[i+1]);
+                    printf("%s",outs);
+                    free(outs);
+                    break;
+                }
+            }
+            return 1;
+    }
     else if(tot_argv == 4 || tot_argv == 5){
         if(strcmp(argv[0], "echo") == 0 && strcmp(argv[2], ">") == 0){
             command_output_redirect(argv[3],argv[1],0);
@@ -388,17 +384,6 @@ int execute(void){
             }
             command_output_redirect(out_file_name,outs,cases);
             free(outs);
-            return 1;
-        }
-        else if(strcmp(argv[0], "diff") == 0){
-            for(int i = 1; i < tot_argv; i++){
-                if(strcmp(argv[i],"<") == 0){
-                    char* outs = command_diff(argv[i-1],argv[i+1]);
-                    printf("%s",outs);
-                    free(outs);
-                    break;
-                }
-            }
             return 1;
         }
         else if(strcmp(argv[0], "echo") == 0){
