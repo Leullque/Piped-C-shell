@@ -47,9 +47,6 @@ void readin(char* input){
 //    }
 }
 
-void selectionSort(char* arr[], int size) {
-
-}
 
 void command_ls(void){
     int i, j, minIndex;
