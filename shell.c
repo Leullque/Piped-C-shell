@@ -374,7 +374,7 @@ int main(void){
         input[i] = '\0';
         readin(input);
 
-        char* std_in = NULL;
+        //char* std_in = NULL;
         char* std_out = NULL;
         for(int j = 0; j < tot_argv; j++){
             if(strcmp(argv[j],"|") == 0){
@@ -390,6 +390,9 @@ int main(void){
                     }
                 }
                 std_out = execute();
+                if(strcmp(std_out, "exit") == 0){
+                    return 0;
+                }
                 for(int k = 0; k < tot_argv; k++){
                     strcpy(argv[k],rest_argv[k]);
                 }
