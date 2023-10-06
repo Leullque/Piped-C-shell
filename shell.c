@@ -7,7 +7,6 @@
 
 char argv[50][MAX_SIZE];
 int tot_argv = 0;
-int print = 0;
 
 struct File{
     char  name[50];
@@ -19,6 +18,11 @@ int tot_file = 3;
 
 void test(char input[]){
     printf("test:%s",input);
+}
+
+char* combine_output(char* a, char* b){
+    strcat(a,b);
+    return a;
 }
 
 void readin(char* input){
@@ -93,6 +97,7 @@ char* command_echo(void){
         strcat(output,argv[i]);
         strcat(output," ");
     }
+    strcat(output,"\n");
     return output;
 }
 
@@ -100,31 +105,15 @@ char* command_echo(void){
 char* command_cat(char file[]){
     char* output = (char*)malloc(30 * sizeof(char));
     int find = 0;
-    int length = 0;
     for(int i = 0; i < tot_file; i++){
         if(strcmp(file, files[i].name) == 0){
-            char *sect;
-            sect = NULL;
-            sect = strtok(files[i].content, "\n");
-
-            while(sect){
-                if(length == 0){
-                    strcpy(output,sect);
-                    strcat(output,"\n");
-                    length++;
-                }else if(length < 30){
-                    strcat(output,sect);
-                    strcat(output,"\n");
-                    length++;
-                }
-                sect = strtok(NULL,"\n");
-            }
+            strcpy(output,files[i].content);
             find = 1;
             break;
         }
     }
     if(find == 0){
-        printf("error: no this file");
+        printf("error: no this file\n");
     }
     return output;
 }
@@ -133,11 +122,14 @@ char* command_head(char file[]){
     char* output = (char*)malloc(10 * sizeof(char));
     int find = 0;
     int length = 0;
+
     for(int i = 0; i < tot_file; i++){
         if(strcmp(file, files[i].name) == 0){
             char *sect;
             sect = NULL;
-            sect = strtok(files[i].content, "\n");
+            char temp[1024];
+            strcpy(temp, files[i].content);
+            sect = strtok(temp, "\n");
 
             while(sect){
                 if(length == 0){
@@ -156,7 +148,7 @@ char* command_head(char file[]){
         }
     }
     if(find == 0){
-        printf("error: no this file");
+        printf("error: no this file\n");
     }
     return output;
 }
@@ -178,15 +170,18 @@ char*  command_diff(char file_a[],char file_b[]){
         }
     }
     if(find == 0){
-        printf("error: no this file");
+        printf("error: no this file\n");
     }
     char *sect_a;
     sect_a = NULL;
-    sect_a = strtok(files[a_index].content, "\n");
+    char temp[1024];
+    strcpy(temp,files[a_index].content);
+    sect_a = strtok(temp, "\n");
 
     char *sect_b;
     sect_b = NULL;
-    sect_b = strtok(files[b_index].content, "\n");
+    strcpy(temp,files[b_index].content);
+    sect_b = strtok(temp, "\n");
 
     while(sect_a && sect_b){
         if(length == 0){
@@ -226,6 +221,29 @@ char*  command_diff(char file_a[],char file_b[]){
     return output;
 }
 
+char*  command_grep(char input[],char target[]){
+    char* output = (char*)malloc(30 * sizeof(char));
+    strcpy(output , "\0");
+    int length = 0;
+    char *sect;
+    sect = NULL;
+    sect = strtok(input, "\n");
+
+    while(sect){
+        char* position = strstr(sect,target);
+        if(length == 0 &&  position != NULL){
+            strcpy(output,sect);
+            strcat(output,"\n");
+        }else if(position != NULL){
+            strcat(output,sect);
+            strcat(output,"\n");
+        }
+        length++;
+        sect = strtok(NULL,"\n");
+    }
+    return output;
+}
+
 void command_output_redirect(char file_name[], char content[],int cases){
     //Write content to a file, attach or overwrite
     int find = 0;
@@ -235,7 +253,6 @@ void command_output_redirect(char file_name[], char content[],int cases){
             if(cases == 0){
                 strcpy(files[i].content,content);
             }else{
-                strcat(files[i].content,"\n");
                 strcat(files[i].content,content);
             }
             find = 1;
@@ -255,8 +272,8 @@ void command_output_redirect(char file_name[], char content[],int cases){
 }
 
 
-char* execute(void){
-    char* output = "exe";
+char* execute(char input[], int pip){
+    char* output = NULL;
     // redirection checking & clean command
     char out_file_name[50];
     char in_file_name[50];
@@ -294,10 +311,10 @@ char* execute(void){
 //    }
 
     if(strcmp(argv[0], "exit") == 0){
-        output = "exit";
+        output = "exit\n";
     }else if(strcmp(argv[0], "diff") == 0){
         if(inredirection != 1){
-            output = "diff: missing operand after 'diff'\n diff: Try 'diff --help' for more information.";
+            output = "diff: missing operand after 'diff'\n diff: Try 'diff --help' for more information.\n";
         }else{
             output = command_diff(argv[tot_argv-1],in_file_name);
         }
@@ -305,8 +322,12 @@ char* execute(void){
         if(tot_argv == 1) {
             output = command_ls();
         }else{
-            output = ".\n..";
-            strcat(output, command_ls());
+            char output_1[] = ".\n..\n";
+            char* output_2 = command_ls();
+            output = combine_output(output_1,output_2);
+            //strcpy(output_1, output_2);
+            //output = output_1;
+            //printf("%s",output);
         }
     }else if(strcmp(argv[0], "echo") == 0){
         output = command_echo();
@@ -317,12 +338,9 @@ char* execute(void){
         for(int i = 1; i < tot_argv; ++i){
             if(i == 1){
                 output = command_cat(argv[i]);
-                strcat(output,"\n");
             }
             else{
-                strcat(output,command_cat(argv[i]));
-                strcat(output,"\n");
-
+                output = combine_output(output,command_cat(argv[i]));
             }
         }
     }else if(strcmp(argv[0], "head") == 0){
@@ -332,20 +350,20 @@ char* execute(void){
         for(int i = 1; i < tot_argv; ++i){
             if(i == 1){
                 output = command_head(argv[i]);
-                strcat(output,"\n");
             }
             else{
                 strcat(output,command_head(argv[i]));
-                strcat(output,"\n");
             }
         }
+    }else if(strcmp(argv[0], "grep") == 0){
+        output = command_grep(input,argv[1]);
     }
 
     if(outredirection == 1){
         command_output_redirect(out_file_name,output,cases);
     }
-    else{
-        printf("%s\n",output);
+    else if(pip == 0){
+        printf("%s",output);
     }
     return output;
 }
@@ -354,7 +372,7 @@ char* execute(void){
 
 int main(void){
     strcpy(files[0].name , "driver");
-    strcpy(files[0].content , "driver");
+    strcpy(files[0].content , "driver\n");
     strcpy(files[1].name , "mumsh");
     strcpy(files[2].name , "mumsh_memory_check");
     while(1){
@@ -374,13 +392,13 @@ int main(void){
         input[i] = '\0';
         readin(input);
 
-        //char* std_in = NULL;
+        char* std_in = NULL;
         char* std_out = NULL;
         for(int j = 0; j < tot_argv; j++){
             if(strcmp(argv[j],"|") == 0){
                 char rest_argv[50][MAX_SIZE];
-                strcpy(argv[j],"\0");
-                j++;
+                strcpy(argv[j++],"\0");
+                int rest_num = tot_argv - j;
                 for(int r = 0; r < tot_argv; r++){
                     if(r+j < tot_argv){
                         strcpy(rest_argv[r],argv[r+j]);
@@ -389,19 +407,28 @@ int main(void){
                         strcpy(rest_argv[r],"\0");
                     }
                 }
-                std_out = execute();
-                if(strcmp(std_out, "exit") == 0){
+
+                tot_argv = j - 1;
+                std_out = execute(std_in,1);
+                free(std_in);
+                if(strcmp(std_out, "exit\n") == 0){
                     return 0;
                 }
+                tot_argv = rest_num;
                 for(int k = 0; k < tot_argv; k++){
                     strcpy(argv[k],rest_argv[k]);
                 }
                 break;
             }
         }
-        std_out = execute();
-        //printf("result: %s",std_out);
-        if(strcmp(std_out, "exit") == 0){
+//        printf("list argv");
+//        for (int k = 0; k < tot_argv; ++k) {
+//            printf("%s ", argv[k]);
+//        }
+        //printf("%s",std_out);
+        char* final_output = execute(std_out,0);
+        //printf("result: %s",final_output);
+        if(strcmp(final_output, "exit\n") == 0){
             return 0;
         }
         // clear all
@@ -409,6 +436,8 @@ int main(void){
             strcpy(argv[j],"\0");
         }
         tot_argv = 0;
+//        free(final_output);
+//        free(std_out);
     }
     return 0;
 }
