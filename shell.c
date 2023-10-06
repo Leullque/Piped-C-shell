@@ -78,7 +78,7 @@ char* command_ls(void){
     }
 
     //print
-    strcpy(output,files[0].name);
+    strcpy(output,files[index[0]].name);
     strcat(output,"\n");
     for(int k = 1; k < tot_file; k++){
         //printf("%s\n",files[index[k]].name);
