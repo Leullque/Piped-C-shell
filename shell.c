@@ -16,9 +16,9 @@ struct File{
 struct File files[1024];
 int tot_file = 3;
 
-void test(char input[]){
-    printf("test:%s",input);
-}
+//void test(char input[]){
+//    printf("test:%s",input);
+//}
 
 char* combine_output(char* a, char* b){
     strcat(a,b);
@@ -154,7 +154,7 @@ char* command_head(char file[]){
 }
 
 char*  command_diff(char file_a[],char file_b[]){
-    char* output = (char*)malloc(10 * sizeof(char));
+    char* output = (char*)malloc(30 * sizeof(char));
     int find = 0;
     int length = 0;
     int a_index = 0;
@@ -392,8 +392,8 @@ int main(void){
         input[i] = '\0';
         readin(input);
 
-        char* std_in = NULL;
-        char* std_out = NULL;
+        char std_in[1024] = "\0";
+        char std_out[1024] = "\0";
         for(int j = 0; j < tot_argv; j++){
             if(strcmp(argv[j],"|") == 0){
                 char rest_argv[50][MAX_SIZE];
@@ -409,8 +409,8 @@ int main(void){
                 }
 
                 tot_argv = j - 1;
-                std_out = execute(std_in,1);
-                free(std_in);
+                strcpy(std_out , execute(std_in,1));
+                //free(std_in);
                 if(strcmp(std_out, "exit\n") == 0){
                     return 0;
                 }
@@ -426,7 +426,8 @@ int main(void){
 //            printf("%s ", argv[k]);
 //        }
         //printf("%s",std_out);
-        char* final_output = execute(std_out,0);
+        char final_output[1024];
+        strcpy(final_output , execute(std_out,0));
         //printf("result: %s",final_output);
         if(strcmp(final_output, "exit\n") == 0){
             return 0;
