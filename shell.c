@@ -331,6 +331,8 @@ char* execute(char input[], int pip){
         }
     }else if(strcmp(argv[0], "echo") == 0){
         output = command_echo();
+    }else if(strcmp(argv[0], "yes") == 0){
+        output = command_echo();
     }else if(strcmp(argv[0], "cat") == 0){
         if(inredirection == 1) {
             output = command_cat(in_file_name);
@@ -357,6 +359,9 @@ char* execute(char input[], int pip){
         }
     }else if(strcmp(argv[0], "grep") == 0){
         output = command_grep(input,argv[1]);
+    }else{
+        output = "Error: Undefined command!\n";
+        pip = 0;
     }
 
     if(outredirection == 1){
