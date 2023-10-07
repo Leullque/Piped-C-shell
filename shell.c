@@ -1,12 +1,13 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <unistd.h>
 
 #define MAX_SIZE 20
 
 
-char argv[50][MAX_SIZE];
-int tot_argv = 0;
+//char argv[50][MAX_SIZE];
+//int tot_argv = 0;
 
 struct File{
     char  name[50];
@@ -25,31 +26,61 @@ char* combine_output(char* a, char* b){
     return a;
 }
 
-void readin(char* input){
+void readin(char* input, char* argv, char* argv_in,
+            char* out_file_name, char* in_file_name, int* outredirection, int* inredirection){// outputredirection= 1: > 2: >> 0: no;
+    // First we read in array of string, including dealing with space
+    char argv_line[50][MAX_SIZE];
+    int tot_argv = 0;
     char *sect;
     sect = NULL;
     sect = strtok(input, " ");
     while(sect){
-        strcpy(argv[tot_argv],sect);
+        strcpy(argv_line[tot_argv],sect);
         tot_argv++;
         sect = strtok(NULL," ");
     }
-
     for(int k = 0; k < tot_argv - 1; k++){
-        if(strcmp(argv[k],">")==0 && strcmp(argv[k+1],">")==0){
-            strcpy(argv[k] , ">>");
+        if(strcmp(argv_line[k],">")==0 && strcmp(argv_line[k+1],">")==0){
+            strcpy(argv_line[k] , ">>");
             for(int j = k + 1; j < tot_argv; j++){
-                strcpy(argv[j] , argv[j+1]);
+                strcpy(argv_line[j] , argv_line[j+1]);
             }
             tot_argv--;
         }
     }
-    //printf("%d",tot_argv);
-//    for(int k = 0; k < tot_argv; k++){
-////        printf(argv[k]);
-////        printf(" ");
-//        test(argv[k]);
-//    }
+
+    // Now we further split the information from argv
+    char temp_argv[50][MAX_SIZE];
+    int k = 0;
+    for(int j = 0; j < tot_argv;){
+        if(strcmp(argv_line[j],">") == 0){
+            strcpy(out_file_name , argv_line[j+1]);
+            *outredirection = 1;
+            j += 2;
+        }else if(strcmp(argv_line[j],">>") == 0){
+            strcpy(out_file_name , argv_line[j+1]);
+            *outredirection = 2;
+            j += 2;
+        }else if(strcmp(argv_line[j],"<") == 0){
+            strcpy(in_file_name , argv_line[j+1]);
+            *inredirection = 1;
+            j += 2;
+            //output = command_cat(argv[j+1]);
+        }else{
+            strcpy(temp_argv[k++] , argv_line[j++]);
+        }
+    }
+    tot_argv = k;
+    strcpy(argv , temp_argv[0]);
+    for (int i = 1; i < tot_argv; ++i) {
+        if(i == 1){
+            strcpy(argv_in, temp_argv[i]);
+            strcat(argv_in," ");
+        }else{
+            strcat(argv_in, temp_argv[i]);
+            strcat(argv_in," ");
+        }
+    }
 }
 
 
@@ -88,18 +119,18 @@ char* command_ls(void){
     return output;
 }
 
-char* command_echo(void){
-    char* output = (char*)malloc(30 * sizeof(char));
-    strcpy(output,argv[1]);
-    strcat(output," ");
-    for(int i = 2; i < tot_argv; i++){
-        //printf("%s ",argv[i]);
-        strcat(output,argv[i]);
-        strcat(output," ");
-    }
-    strcat(output,"\n");
-    return output;
-}
+//char* command_echo(){
+//    char* output = (char*)malloc(30 * sizeof(char));
+//    strcpy(output,argv[1]);
+//    strcat(output," ");
+//    for(int i = 2; i < tot_argv; i++){
+//        //printf("%s ",argv[i]);
+//        strcat(output,argv[i]);
+//        strcat(output," ");
+//    }
+//    strcat(output,"\n");
+//    return output;
+//}
 
 
 char* command_cat(char file[]){
@@ -250,7 +281,7 @@ void command_output_redirect(char file_name[], char content[],int cases){
     for(int i = 0; i < tot_file; i++){
         if(strcmp(file_name, files[i].name)==0){
             //printf("find%s",files[i].content);
-            if(cases == 0){
+            if(cases == 1){
                 strcpy(files[i].content,content);
             }else{
                 strcat(files[i].content,content);
@@ -261,7 +292,7 @@ void command_output_redirect(char file_name[], char content[],int cases){
     }
     if(find == 0){
         strcpy(files[tot_file].name , file_name);
-        if(cases == 0){
+        if(cases == 1){
             strcpy(files[tot_file].content,content);
         }else{
             strcat(files[tot_file].content,"\n");
@@ -272,100 +303,79 @@ void command_output_redirect(char file_name[], char content[],int cases){
 }
 
 
-char* execute(char input[], int pip){
-    char* output = NULL;
+char* execute(char argv[], char argv_in[], char out_file_name[], char in_file_name[],
+              int inredirection, int outredirection, int pip, char input[]){
+    char* output = "exe";
     // redirection checking & clean command
-    char out_file_name[50];
-    char in_file_name[50];
-    int cases = 0;
-    int outredirection = 0;
-    int inredirection = 0;
-    char temp_argv[50][MAX_SIZE];
-    int k = 0;
-    for(int j = 0; j < tot_argv;){
-        if(strcmp(argv[j],">") == 0){
-            strcpy(out_file_name , argv[j+1]);
-            cases = 0;
-            outredirection = 1;
-            j += 2;
-        }else if(strcmp(argv[j],">>") == 0){
-            strcpy(out_file_name , argv[j+1]);
-            cases = 1;
-            outredirection = 1;
-            j += 2;
-        }else if(strcmp(argv[j],"<") == 0){
-            strcpy(in_file_name , argv[j+1]);
-            inredirection = 1;
-            j += 2;
-            //output = command_cat(argv[j+1]);
-        }else{
-            strcpy(temp_argv[k++] , argv[j++]);
-        }
+    char rest_line[50][MAX_SIZE];
+    int tot_argv = 0;
+    char *sect;
+    sect = NULL;
+    char temp_line[1024] = "\0";
+    strcpy(temp_line, argv_in);
+    sect = strtok(temp_line, " ");
+    while(sect){
+        strcpy(rest_line[tot_argv],sect);
+        tot_argv++;
+        sect = strtok(NULL," ");
     }
-    tot_argv = k;
-    for (int i = 0; i < tot_argv; ++i) {
-        strcpy(argv[i],temp_argv[i]);
-    }
-//    for (int i = 0; i < tot_argv; ++i) {
-//        printf("%s ",argv[i]);
-//    }
 
-    if(strcmp(argv[0], "exit") == 0){
+    if(strcmp(argv, "exit") == 0){
         output = "exit\n";
-    }else if(strcmp(argv[0], "diff") == 0){
+    }else if(strcmp(argv, "diff") == 0){
         if(inredirection != 1){
             output = "diff: missing operand after 'diff'\n diff: Try 'diff --help' for more information.\n";
         }else{
-            output = command_diff(argv[tot_argv-1],in_file_name);
+            output = command_diff(rest_line[tot_argv-1],in_file_name);
         }
-    }else if(strcmp(argv[0], "ls") == 0){
-        if(tot_argv == 1) {
+    }else if(strcmp(argv, "ls") == 0){
+        if(tot_argv == 0) {
             output = command_ls();
         }else{
             char output_1[] = ".\n..\n";
             char* output_2 = command_ls();
             output = combine_output(output_1,output_2);
-            //strcpy(output_1, output_2);
-            //output = output_1;
-            //printf("%s",output);
         }
-    }else if(strcmp(argv[0], "echo") == 0){
-        output = command_echo();
-    }else if(strcmp(argv[0], "yes") == 0){
-        output = command_echo();
-    }else if(strcmp(argv[0], "cat") == 0){
+    }else if(strcmp(argv, "echo") == 0 || strcmp(argv, "yes") == 0){
+        strcat(argv_in, "\n");
+        output = argv_in;
+    }else if(strcmp(argv, "cat") == 0){
         if(inredirection == 1) {
             output = command_cat(in_file_name);
         }
-        for(int i = 1; i < tot_argv; ++i){
-            if(i == 1){
-                output = command_cat(argv[i]);
+        for(int i = 0; i < tot_argv; ++i){
+            if(i == 0){
+                output = command_cat(rest_line[i]);
             }
             else{
-                output = combine_output(output,command_cat(argv[i]));
+                output = combine_output(output,command_cat(rest_line[i]));
             }
         }
-    }else if(strcmp(argv[0], "head") == 0){
+    }else if(strcmp(argv, "head") == 0){
         if(inredirection == 1){
             output = command_head(in_file_name);
         }
-        for(int i = 1; i < tot_argv; ++i){
-            if(i == 1){
-                output = command_head(argv[i]);
+        for(int i = 0; i < tot_argv; ++i){
+            if(i == 0){
+                output = command_head(rest_line[i]);
             }
             else{
-                strcat(output,command_head(argv[i]));
+                strcat(output,command_head(rest_line[i]));
             }
         }
-    }else if(strcmp(argv[0], "grep") == 0){
-        output = command_grep(input,argv[1]);
+    }else if(strcmp(argv, "grep") == 0){
+        output = command_grep(input,argv_in);
+    }else if(strcmp(argv, "sleep") == 0){
+        unsigned int duration = strtoul(argv_in,NULL,10);
+        sleep(duration);
+        pip = 1;
     }else{
         output = "Error: Undefined command!\n";
         pip = 0;
     }
 
-    if(outredirection == 1){
-        command_output_redirect(out_file_name,output,cases);
+    if(outredirection != 0){
+        command_output_redirect(out_file_name,output,outredirection);
     }
     else if(pip == 0){
         printf("%s",output);
@@ -385,6 +395,8 @@ int main(void){
         char input[1024];
         char ch;
         int i = 0;
+
+        //deal with > < and space + read in command line
         while(scanf("%c",&ch) && ch != '\n'){
             if(ch == '>' || ch == '<'){
                 input[i++] = ' ';
@@ -395,56 +407,75 @@ int main(void){
             }
         }
         input[i] = '\0';
-        readin(input);
 
-        char std_in[1024] = "\0";
-        char std_out[1024] = "\0";
-        for(int j = 0; j < tot_argv; j++){
-            if(strcmp(argv[j],"|") == 0){
-                char rest_argv[50][MAX_SIZE];
-                strcpy(argv[j++],"\0");
-                int rest_num = tot_argv - j;
-                for(int r = 0; r < tot_argv; r++){
-                    if(r+j < tot_argv){
-                        strcpy(rest_argv[r],argv[r+j]);
-                        strcpy(argv[r+j],"\0");
+        //Check for pipline
+        char rest_input[1024];
+        int pip = 0;
+        for (int j = 0; j < i; ++j) {
+            if(input[j] == '|'){
+                pip = 1;
+                input[j++] = '\0';
+                for(int r = 0; r < i; r++){
+                    if(r+j < i){
+                        rest_input[r] = input[r+j];
+                        input[r+j] = '\0';
                     }else{
-                        strcpy(rest_argv[r],"\0");
+                        rest_input[r] = '\0';
                     }
                 }
-
-                tot_argv = j - 1;
-                strcpy(std_out , execute(std_in,1));
-                //free(std_in);
-                if(strcmp(std_out, "exit\n") == 0){
-                    return 0;
-                }
-                tot_argv = rest_num;
-                for(int k = 0; k < tot_argv; k++){
-                    strcpy(argv[k],rest_argv[k]);
-                }
-                break;
             }
         }
-//        printf("list argv");
-//        for (int k = 0; k < tot_argv; ++k) {
-//            printf("%s ", argv[k]);
-//        }
-        //printf("%s",std_out);
-        char final_output[1024];
-        strcpy(final_output , execute(std_out,0));
-        //printf("result: %s",final_output);
-        if(strcmp(final_output, "exit\n") == 0){
+//        printf("input: %s ",input);
+//        printf("rest_input: %s ",rest_input);
+
+        char *argv = (char *) malloc(20);
+        char *argv_in = (char *) malloc(30);
+        char* out_file_name = (char *) malloc(30);
+        char* in_file_name = (char *) malloc(30);
+        strcpy(argv, "\0");
+        strcpy(argv_in, "\0");
+        strcpy(out_file_name, "\0");
+        strcpy(in_file_name, "\0");
+        int outredirection = 0;
+        int inredirection = 0;
+        readin(input, argv, argv_in,
+               out_file_name, in_file_name, &outredirection, &inredirection);
+        char std_in[1024] = "\0";
+        char std_out[1024] = "\0";
+        strcpy(std_out, execute(argv, argv_in, out_file_name, in_file_name,
+                inredirection, outredirection, pip, std_in));
+        //printf("std_out")
+//        printf("arg: %s ",arg);
+//        printf("arg_num: %d ",argv_num);
+//        printf("argv_in: %s",argv_in);
+//        printf("out_file_name: %s ",out_file_name);
+//        printf("in_file_name: %s",in_file_name);
+//        printf("outredirection: %d ",outredirection);
+//        printf("inredirection: %d ",inredirection);
+        free(argv);
+        free(argv_in);
+        free(out_file_name);
+        free(in_file_name);
+        if(strcmp(std_out, "exit\n") == 0){
             return 0;
         }
-        // clear all
-        for(int j = 0; j < tot_argv; j++){
-            strcpy(argv[j],"\0");
-        }
-        tot_argv = 0;
-//        free(final_output);
-//        free(std_out);
+//        for(int j = 0; j < tot_argv; j++){
+//                strcpy(std_out , execute(tot_argv,argv,std_in,1));
+//                //free(std_in);
+//                if(strcmp(std_out, "exit\n") == 0){
+//                    return 0;
+//                }
+//        }
+//        char final_output[1024];
+//        //strcpy(final_output , execute(tot_argv,argv,std_out,0));
+//        if(strcmp(final_output, "exit\n") == 0){
+//            return 0;
+//        }
+//        // clear all
+//        for(int j = 0; j < tot_argv; j++){
+//            strcpy(argv[j],"\0");
+//        }
+//        tot_argv = 0;
     }
     return 0;
 }
-
