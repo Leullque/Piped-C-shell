@@ -366,7 +366,7 @@ char* execute(char argv[], char argv_in[], char out_file_name[], char in_file_na
     }else if(strcmp(argv, "grep") == 0){
         output = command_grep(input,argv_in);
     }else if(strcmp(argv, "sleep") == 0){
-        unsigned long duration = strtoul(argv_in,NULL,10);
+        unsigned int duration = (unsigned int) strtoul(argv_in,NULL,10);
         sleep(duration);
         pip = 1;
     }else{
