@@ -381,7 +381,7 @@ int main(void){
     while(1){
         //printf("mumsh $ ");//prompt waiting for the input
         char input[1024];
-        char ch;
+        //char ch;
         int i = 0;
 
         //deal with > < and space + read in command line
@@ -395,7 +395,7 @@ int main(void){
 //            }
 //        }
 //        input[i] = '\0';
-        int result = scanf("%1024[^\n]", input);
+        int result = scanf("%1023[^\n]", input);
         if(result == EOF) {
             break;
         }else if(result == 0) {
