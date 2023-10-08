@@ -3,12 +3,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-#define MAX_SIZE 20
-
-
-//char argv[50][MAX_SIZE];
-//int tot_argv = 0;
-
+#define MAX_SIZE 50
 struct File{
     char  name[50];
     char  content[1024];
@@ -380,45 +375,45 @@ int main(void){
     printf("mumsh $ ");
     while(1){
         //printf("mumsh $ ");//prompt waiting for the input
-        char input[1024];
+        char line_in[1024] = "\0";
         //char ch;
-        int i = 0;
-
         //deal with > < and space + read in command line
-//        while(scanf("%c",&ch) && ch != '\n'){
-//            if(ch == '>' || ch == '<'){
-//                input[i++] = ' ';
-//                input[i++] = ch;
-//                input[i++] = ' ';
-//            }else{
-//                input[i++] = ch;
-//            }
-//        }
-//        input[i] = '\0';
-        int result = scanf("%1023[^\n]", input);
+        //while(scanf("%c",&ch) && ch != '\n')
+
+        int result = scanf("%1023[^\n]", line_in);
         if(result == EOF) {
             break;
         }else if(result == 0) {
             scanf("%*c");
         }
         else{
-            char rest_input[1024];
+            char input[1024]= "\0";
+            int index_input = 0;
+            char rest_input[1024]= "\0";
+            int index_rest_input = 0;
             int pip = 0;
-            for (int j = 0; j < i; ++j) {
-                if(input[j] == '|'){
+            for (int j = 0; j < (int) strlen(line_in);) {
+                if(line_in[j] == '|'){
                     pip = 1;
-                    input[j++] = '\0';
-                    for(int r = 0; r < i; r++){
-                        if(r+j < i){
-                            rest_input[r] = input[r+j];
-                            input[r+j] = '\0';
-                        }else{
-                            rest_input[r] = '\0';
-                        }
+                    input[index_input++] = '\0';
+                    j++;
+                }else if (line_in[j] == '>' || line_in[j] == '<'){
+                    if(pip == 1){
+                        rest_input[index_rest_input++] = ' ';
+                        rest_input[index_rest_input++] = line_in[j++];
+                        rest_input[index_rest_input++] = ' ';
+                    }else{
+                        input[index_input++] = ' ';
+                        input[index_input++] = line_in[j++];
+                        input[index_input++] = ' ';
                     }
+                }else if(pip == 1){
+                    rest_input[index_rest_input++] = line_in[j++];
+                }else{
+                    input[index_input++] = line_in[j++];
                 }
             }
-//        printf("input: %s ",input);
+        //printf("input: %s ",input);
 //        printf("rest_input: %s ",rest_input);
 
             char *argv = (char *) malloc(20);
@@ -479,6 +474,7 @@ int main(void){
             if(strcmp(std_out, "exit\n") == 0){
                 return 0;
             }
+
             printf("mumsh $ ");
 
         }
