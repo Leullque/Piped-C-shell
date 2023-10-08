@@ -119,19 +119,6 @@ char* command_ls(void){
     return output;
 }
 
-//char* command_echo(){
-//    char* output = (char*)malloc(30 * sizeof(char));
-//    strcpy(output,argv[1]);
-//    strcat(output," ");
-//    for(int i = 2; i < tot_argv; i++){
-//        //printf("%s ",argv[i]);
-//        strcat(output,argv[i]);
-//        strcat(output," ");
-//    }
-//    strcat(output,"\n");
-//    return output;
-//}
-
 
 char* command_cat(char file[]){
     char* output = (char*)malloc(30 * sizeof(char));
@@ -364,7 +351,7 @@ char* execute(char argv[], char argv_in[], char out_file_name[], char in_file_na
             }
         }
     }else if(strcmp(argv, "grep") == 0){
-        output = command_grep(input,argv_in);
+        output = command_grep(input,rest_line[0]);
     }else if(strcmp(argv, "sleep") == 0){
         unsigned int duration = (unsigned int) strtoul(argv_in,NULL,10);
         sleep(duration);
@@ -390,92 +377,113 @@ int main(void){
     strcpy(files[0].content , "driver\n");
     strcpy(files[1].name , "mumsh");
     strcpy(files[2].name , "mumsh_memory_check");
+    printf("mumsh $ ");
     while(1){
-        printf("mumsh $ ");//prompt waiting for the input
+        //printf("mumsh $ ");//prompt waiting for the input
         char input[1024];
         char ch;
         int i = 0;
 
         //deal with > < and space + read in command line
-        while(scanf("%c",&ch) && ch != '\n'){
-            if(ch == '>' || ch == '<'){
-                input[i++] = ' ';
-                input[i++] = ch;
-                input[i++] = ' ';
-            }else{
-                input[i++] = ch;
-            }
+//        while(scanf("%c",&ch) && ch != '\n'){
+//            if(ch == '>' || ch == '<'){
+//                input[i++] = ' ';
+//                input[i++] = ch;
+//                input[i++] = ' ';
+//            }else{
+//                input[i++] = ch;
+//            }
+//        }
+//        input[i] = '\0';
+        int result = scanf("%1024[^\n]", input);
+        if(result == EOF) {
+            break;
+        }else if(result == 0) {
+            scanf("%*c");
         }
-        input[i] = '\0';
-
-        //Check for pipline
-        char rest_input[1024];
-        int pip = 0;
-        for (int j = 0; j < i; ++j) {
-            if(input[j] == '|'){
-                pip = 1;
-                input[j++] = '\0';
-                for(int r = 0; r < i; r++){
-                    if(r+j < i){
-                        rest_input[r] = input[r+j];
-                        input[r+j] = '\0';
-                    }else{
-                        rest_input[r] = '\0';
+        else{
+            char rest_input[1024];
+            int pip = 0;
+            for (int j = 0; j < i; ++j) {
+                if(input[j] == '|'){
+                    pip = 1;
+                    input[j++] = '\0';
+                    for(int r = 0; r < i; r++){
+                        if(r+j < i){
+                            rest_input[r] = input[r+j];
+                            input[r+j] = '\0';
+                        }else{
+                            rest_input[r] = '\0';
+                        }
                     }
                 }
             }
-        }
 //        printf("input: %s ",input);
 //        printf("rest_input: %s ",rest_input);
 
-        char *argv = (char *) malloc(20);
-        char *argv_in = (char *) malloc(30);
-        char* out_file_name = (char *) malloc(30);
-        char* in_file_name = (char *) malloc(30);
-        strcpy(argv, "\0");
-        strcpy(argv_in, "\0");
-        strcpy(out_file_name, "\0");
-        strcpy(in_file_name, "\0");
-        int outredirection = 0;
-        int inredirection = 0;
-        readin(input, argv, argv_in,
-               out_file_name, in_file_name, &outredirection, &inredirection);
-        char std_in[1024] = "\0";
-        char std_out[1024] = "\0";
-        strcpy(std_out, execute(argv, argv_in, out_file_name, in_file_name,
-                inredirection, outredirection, pip, std_in));
-        //printf("std_out")
-//        printf("arg: %s ",arg);
-//        printf("arg_num: %d ",argv_num);
-//        printf("argv_in: %s",argv_in);
-//        printf("out_file_name: %s ",out_file_name);
-//        printf("in_file_name: %s",in_file_name);
-//        printf("outredirection: %d ",outredirection);
-//        printf("inredirection: %d ",inredirection);
-        free(argv);
-        free(argv_in);
-        free(out_file_name);
-        free(in_file_name);
-        if(strcmp(std_out, "exit\n") == 0){
-            return 0;
+            char *argv = (char *) malloc(20);
+            char *argv_in = (char *) malloc(1024);
+            char* out_file_name = (char *) malloc(30);
+            char* in_file_name = (char *) malloc(30);
+            strcpy(argv, "\0");
+            strcpy(argv_in, "\0");
+            strcpy(out_file_name, "\0");
+            strcpy(in_file_name, "\0");
+            int outredirection = 0;
+            int inredirection = 0;
+            readin(input, argv, argv_in,
+                   out_file_name, in_file_name, &outredirection, &inredirection);
+            //printf("read in input: %s",input);
+            char std_in[1024] = "\0";
+            char std_out[1024] = "\0";
+
+
+            char *argv_2 = (char *) malloc(20);
+            char *argv_in_2 = (char *) malloc(1024);
+            char* out_file_name_2 = (char *) malloc(30);
+            char* in_file_name_2 = (char *) malloc(30);
+            strcpy(argv_2, "\0");
+            strcpy(argv_in_2, "\0");
+            strcpy(out_file_name_2, "\0");
+            strcpy(in_file_name_2, "\0");
+            int outredirection_2 = 0;
+            int inredirection_2 = 0;
+            readin(rest_input, argv_2, argv_in_2,
+                   out_file_name_2, in_file_name_2, &outredirection_2, &inredirection_2);
+
+            if(pip == 0){
+                strcpy(std_out, execute(argv, argv_in, out_file_name, in_file_name,
+                                        inredirection, outredirection, pip, std_in));
+            }else{
+                if(strcmp(argv, "exit") == 0 || strcmp(argv, "sleep") == 0 ||
+                   strcmp(argv_2, "exit") == 0 || strcmp(argv_2, "sleep") == 0){
+                    strcpy(std_out, execute(argv, argv_in, out_file_name, in_file_name,
+                                            inredirection, outredirection, pip, std_in));
+                }else{
+                    strcpy(std_out, execute(argv, argv_in, out_file_name, in_file_name,
+                                            inredirection, outredirection, pip, std_in));
+                    //printf("std_out is:%s",std_out);
+                    strcpy(std_in, std_out);
+                    //printf("std_in is:%s",std_in);
+                    strcpy(std_out, "\0");
+                    strcpy(std_out, execute(argv_2, argv_in_2, out_file_name_2, in_file_name_2,
+                                            inredirection_2, outredirection_2, 0, std_in));
+                    //printf("std_out is:%s",std_out);
+                }
+            }
+
+            free(argv);
+            free(argv_in);
+            free(out_file_name);
+            free(in_file_name);
+            if(strcmp(std_out, "exit\n") == 0){
+                return 0;
+            }
+            printf("mumsh $ ");
+
         }
-//        for(int j = 0; j < tot_argv; j++){
-//                strcpy(std_out , execute(tot_argv,argv,std_in,1));
-//                //free(std_in);
-//                if(strcmp(std_out, "exit\n") == 0){
-//                    return 0;
-//                }
-//        }
-//        char final_output[1024];
-//        //strcpy(final_output , execute(tot_argv,argv,std_out,0));
-//        if(strcmp(final_output, "exit\n") == 0){
-//            return 0;
-//        }
-//        // clear all
-//        for(int j = 0; j < tot_argv; j++){
-//            strcpy(argv[j],"\0");
-//        }
-//        tot_argv = 0;
     }
+
     return 0;
 }
+
