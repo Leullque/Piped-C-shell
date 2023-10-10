@@ -228,9 +228,10 @@ int main(void) {
     char out_file_name[50];
     char in_file_name[50];
 
-    //printf("mumsh $ ");
+    printf("mumsh $ ");
+    fflush(stdout);
     while (1) {
-        printf("mumsh $ ");
+        //printf("mumsh $ ");
         if (fgets(input, sizeof(input), stdin) == NULL) {
             break; // Exit on EOF (Ctrl-D)
         }
@@ -299,7 +300,8 @@ int main(void) {
         // for (int s = 0; s < MAX_INPUT_SIZE/2; s++) {
         // args[s] = NULL;
         // }
-        //printf("mumsh $ ");
+        printf("mumsh $ ");
+        fflush(stdout);
     }
 
     return 0;
