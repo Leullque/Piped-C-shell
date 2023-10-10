@@ -91,7 +91,7 @@ char* out_file_name, char* in_file_name, int* outredirection, int* inredirection
    //argv_in[*argc] = NULL;
 }
 
-int exe_normal(char* args[]){
+void exe_normal(char* args[]){
     pid_t child_pid = fork();
     if (child_pid == 0) {
         // Child process
@@ -104,10 +104,10 @@ int exe_normal(char* args[]){
         waitpid(child_pid, &status, 0); // Wait for the child to finish
     } else {
         perror("fork"); // Print an error message if fork fails
-    }      
+    }   
 }
 
-int exe_input_redirection(char* args[], char in_file_name[], int inredirection){
+void exe_input_redirection(char* args[], char in_file_name[]){
     pid_t child_pid = fork();
     if (child_pid == 0) {
         // Child process
@@ -136,7 +136,7 @@ int exe_input_redirection(char* args[], char in_file_name[], int inredirection){
         }     
 }
 
-int exe_inoutput_redirection(char* args[], char in_file_name[], char out_file_name[], int outredirection){
+void exe_inoutput_redirection(char* args[], char in_file_name[], char out_file_name[], int outredirection){
     pid_t child_pid = fork();
     if (child_pid == 0) {
         // Child process
@@ -152,7 +152,7 @@ int exe_inoutput_redirection(char* args[], char in_file_name[], char out_file_na
             }
         close(fd_in);
 
-        int fd_out;
+        int fd_out = 0;
         switch (outredirection)
             {
             case 1:
@@ -184,11 +184,11 @@ int exe_inoutput_redirection(char* args[], char in_file_name[], char out_file_na
         }
 }
 
-int exe_output_redirection(char* args[], char out_file_name[], int outredirection){
+void exe_output_redirection(char* args[], char out_file_name[], int outredirection){
         pid_t child_pid = fork();
     if (child_pid == 0) {
         // Child process
-        int fd;
+        int fd = 0;
         switch (outredirection)
             {
             case 1:
@@ -220,7 +220,7 @@ int exe_output_redirection(char* args[], char out_file_name[], int outredirectio
         }
 }
 
-int main() {
+int main(void) {
     char input[MAX_INPUT_SIZE];
     char *args[MAX_INPUT_SIZE/2];
     char argv[50];
@@ -280,7 +280,7 @@ int main() {
             if (inredirection != 0 && outredirection != 0) {
                 exe_inoutput_redirection(args, in_file_name, out_file_name, outredirection);
             } else if (inredirection != 0) {
-                exe_input_redirection(args, in_file_name, inredirection);
+                exe_input_redirection(args, in_file_name);
             } else if (outredirection != 0) {
                 exe_output_redirection(args, out_file_name, outredirection);
             } else{
