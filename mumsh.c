@@ -9,7 +9,7 @@
 #define MAX_SIZE 50
 
 void command_exit(void){
-    printf("exit/n");
+    printf("exit\n");
     exit(0);
 }
 
