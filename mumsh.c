@@ -41,7 +41,7 @@ void ctrl_c_handler(int sig){
     }
 }
 
-int readin(char line_in[], char* argv, char* argv_in, int* argc,
+void readin(char line_in[], char* argv, char* argv_in, int* argc,
 char* out_file_name, char* in_file_name, int* outredirection, int* inredirection){
     //outputredirection= 1: > 2: >> 0: no;
    // First we read in array of string, including dealing with space
