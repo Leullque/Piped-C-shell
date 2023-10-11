@@ -265,12 +265,13 @@ int main(void) {
     printf("mumsh $ ");
     fflush(stdout);
     while (1) {
-        if (fgets(input, sizeof(input), stdin) == NULL) {
-            break; // Exit on EOF (Ctrl-D)
-        }
-        if(input == EOF){
+        if (fgets(input, sizeof(input), stdin) == EOF) {
             command_exit();
+            //break; // Exit on EOF (Ctrl-D)
         }
+        // if(input == EOF){
+        //     command_exit();
+        // }
         input[strcspn(input, "\n")] = '\0';
 
         if (strcmp(input, "exit") == 0) {
