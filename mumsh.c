@@ -5,6 +5,8 @@
 #include <sys/wait.h>
 #include <fcntl.h>
 #include <signal.h>
+#include <errno.h>
+
 
 #define MAX_INPUT_SIZE 1024
 #define MAX_SIZE 50
@@ -311,7 +313,7 @@ int main(void) {
                     }
                     exec = execvp(args[0], args);
                     if(exec == -1){
-                        printf("non-exist: %s not found\n", args[0]);
+                        printf("%s: command not found\n", args[0]);
                         exit(EXIT_FAILURE);
                     }
                 
@@ -346,7 +348,7 @@ int main(void) {
                 dup2(pipefd[1], STDOUT_FILENO);
                 exec = execvp(args[0], args);
                 if(exec == -1){
-                    printf("non-exist: %s not found\n", args[0]);
+                    printf("%s: command not found\n", args[0]);
                     exit(EXIT_FAILURE);
                 }
                 close(pipefd[1]); // close write port
@@ -384,7 +386,7 @@ int main(void) {
                         
                         exec = execvp(args[0], args);
                         if(exec == -1){
-                            printf("non-exist: %s not found\n", args[0]);
+                            printf("%s: command not found\n", args[0]);
                             exit(EXIT_FAILURE);
                         }
                         close(pipefd[0]); // close write port
