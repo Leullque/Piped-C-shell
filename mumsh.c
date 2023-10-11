@@ -91,23 +91,24 @@ char* out_file_name, char* in_file_name, int* outredirection, int* inredirection
    //argv_in[*argc] = NULL;
 }
 
-void exe_normal(char* args[]){
-    pid_t child_pid = fork();
-    if (child_pid == 0) {
-        // Child process
-        execvp(args[0], args);
-        perror("execvp"); // Print an error message if execvp fails
-        exit(1);
-    } else if (child_pid > 0) {
-        // Parent process
-        int status;
-        waitpid(child_pid, &status, 0); // Wait for the child to finish
-    } else {
-        perror("fork"); // Print an error message if fork fails
-    }   
-}
+// void exe_normal(char* args[]){
+//     pid_t child_pid = fork();
+//     if (child_pid == 0) {
+//         // Child process
+//         execvp(args[0], args);
+//         perror("execvp"); // Print an error message if execvp fails
+//         exit(1);
+//     } else if (child_pid > 0) {
+//         // Parent process
+//         int status;
+//         waitpid(child_pid, &status, 0); // Wait for the child to finish
+//     } else {
+//         perror("fork"); // Print an error message if fork fails
+//     }   
+// }
 
-void exe_input_redirection(char* args[], char in_file_name[]){
+void exe_input_redirection(char in_file_name[]){
+// void exe_input_redirection(char* args[], char in_file_name[]){
     // pid_t child_pid = fork();
     // if (child_pid == 0) {
     //     // Child process
@@ -146,7 +147,8 @@ int fd = open(in_file_name, O_RDONLY);
         close(fd);
 }
 
-void exe_inoutput_redirection(char* args[], char in_file_name[], char out_file_name[], int outredirection){
+// void exe_inoutput_redirection(char* args[], char in_file_name[], char out_file_name[], int outredirection){
+void exe_inoutput_redirection(char in_file_name[], char out_file_name[], int outredirection){    
     // pid_t child_pid = fork();
     // if (child_pid == 0) {
     //     // Child process
@@ -229,7 +231,8 @@ void exe_inoutput_redirection(char* args[], char in_file_name[], char out_file_n
         exit(1);
 }
 
-void exe_output_redirection(char* args[], char out_file_name[], int outredirection){
+void exe_output_redirection(char out_file_name[], int outredirection){
+// void exe_output_redirection(char* args[], char out_file_name[], int outredirection){
         //pid_t child_pid = fork();
     //if (child_pid == 0) {
         // Child process
@@ -325,11 +328,11 @@ int main(void) {
                 pid_t child_pid;
                 if ((child_pid = fork()) == 0) {
                     if (inredirection != 0 && outredirection != 0) {
-                        exe_inoutput_redirection(args, in_file_name, out_file_name, outredirection);
+                        exe_inoutput_redirection(in_file_name, out_file_name, outredirection);
                         } else if (inredirection != 0) {
-                        exe_input_redirection(args, in_file_name);
+                        exe_input_redirection(in_file_name);
                         } else if (outredirection != 0) {
-                        exe_output_redirection(args, out_file_name, outredirection);
+                        exe_output_redirection(out_file_name, outredirection);
                     }
                     execvp(args[0], args);
                     perror("execvp");
@@ -353,11 +356,11 @@ int main(void) {
                 // Create the first child process
                 if ((child_pid = fork()) == 0) {
                     if (inredirection != 0 && outredirection != 0) {
-                    exe_inoutput_redirection(args, in_file_name, out_file_name, outredirection);
+                    exe_inoutput_redirection(in_file_name, out_file_name, outredirection);
                     } else if (inredirection != 0) {
-                    exe_input_redirection(args, in_file_name);
+                    exe_input_redirection(in_file_name);
                     } else if (outredirection != 0) {
-                    exe_output_redirection(args, out_file_name, outredirection);
+                    exe_output_redirection(out_file_name, outredirection);
                     }
                     close(pipefd[0]);  // Close the read end of the pipe
                     // Redirect stdout to the write end of the pipe
@@ -394,11 +397,11 @@ int main(void) {
                 // Create the second child process
                 if ((child_pid = fork()) == 0) {
                     if (inredirection != 0 && outredirection != 0) {
-                        exe_inoutput_redirection(args, in_file_name, out_file_name, outredirection);
+                        exe_inoutput_redirection(in_file_name, out_file_name, outredirection);
                     } else if (inredirection != 0) {
-                        exe_input_redirection(args, in_file_name);
+                        exe_input_redirection(in_file_name);
                     } else if (outredirection != 0) {
-                        exe_output_redirection(args, out_file_name, outredirection);
+                        exe_output_redirection(out_file_name, outredirection);
                     }
                     close(pipefd[1]);  // Close the write end of the pipe
 
