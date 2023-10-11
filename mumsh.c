@@ -4,6 +4,7 @@
 #include <unistd.h>
 #include <sys/wait.h>
 #include <fcntl.h>
+#include <signal.h>
 
 #define MAX_INPUT_SIZE 1024
 #define MAX_SIZE 50
@@ -11,6 +12,31 @@
 void command_exit(void){
     printf("exit\n");
     exit(0);
+}
+
+void command_pwd(void){
+    int size = 1024;
+    char *buffer = malloc(size);
+    getcwd(buffer, size);
+    printf("%s\n", buffer);
+    free(buffer);
+}
+
+void command_cd(char argv_in[]){
+    char path[1024];
+    char *sect;
+    sect = NULL;
+    sect = strtok(argv_in, "cd ");
+    if (sect != NULL){
+        strcpy(path,sect);
+    }
+    chdir(path);
+}
+
+void ctrl_c_handler(int sig){
+    if(sig == SIGINT){
+        command_exit();
+    }
 }
 
 void readin(char line_in[], char* argv, char* argv_in, int* argc,
@@ -92,145 +118,63 @@ char* out_file_name, char* in_file_name, int* outredirection, int* inredirection
 }
 
 void exe_input_redirection(char in_file_name[]){
-// void exe_input_redirection(char* args[], char in_file_name[]){
-    // pid_t child_pid = fork();
-    // if (child_pid == 0) {
-    //     // Child process
-    //     int fd = open(in_file_name, O_RDONLY);
-    //     if (fd == -1) {
-    //             perror("Error opening input file");
-    //             exit(EXIT_FAILURE);
-    //             }
-    //     if (dup2(fd, STDIN_FILENO) == -1) {
-    //             perror("Error redirecting input");
-    //             exit(EXIT_FAILURE);
-    //         }
-    //     close(fd);
-
-    //     // Execute the command
-    //     execvp(args[0], args);
-
-    //     perror("Error executing command");
-    //     exit(EXIT_FAILURE);
-    //     } else if (child_pid > 0){
-    //         // Parent process
-    //         int status;
-    //         waitpid(child_pid, &status, 0);
-    //     } else {
-    //     perror("fork"); // Print an error message if fork fails
-    //     }     
-int fd = open(in_file_name, O_RDONLY);
-        if (fd == -1) {
-                perror("Error opening input file");
-                exit(EXIT_FAILURE);
-                }
-        if (dup2(fd, STDIN_FILENO) == -1) {
-                perror("Error redirecting input");
-                exit(EXIT_FAILURE);
-            }
-        close(fd);
+    int fd = open(in_file_name, O_RDONLY);
+    if (fd == -1) {
+        perror("Error opening input file");
+        exit(EXIT_FAILURE);
+    }
+    if (dup2(fd, STDIN_FILENO) == -1) {
+        perror("Error redirecting input");
+        exit(EXIT_FAILURE);
+    }
+    close(fd);
 }
 
-// void exe_inoutput_redirection(char* args[], char in_file_name[], char out_file_name[], int outredirection){
-void exe_inoutput_redirection(char in_file_name[], char out_file_name[], int outredirection){    
-    // pid_t child_pid = fork();
-    // if (child_pid == 0) {
-    //     // Child process
-    //     int fd_in;
-    //     fd_in = open(in_file_name, O_RDONLY);
-    //     if (fd_in == -1) {
-    //             perror("Error opening input file");
-    //             exit(EXIT_FAILURE);
-    //             }
-    //     if (dup2(fd_in, STDIN_FILENO) == -1) {
-    //             perror("Error redirecting input");
-    //             exit(EXIT_FAILURE);
-    //         }
-    //     close(fd_in);
 
-    //     int fd_out = 0;
-    //     switch (outredirection)
-    //         {
-    //         case 1:
-    //             fd_out = open(out_file_name, O_CREAT|O_RDWR|O_TRUNC,0664);
-    //         case 2:
-    //             fd_out = open(out_file_name, O_CREAT|O_RDWR|O_APPEND,0664);
-    //         default:
-    //             break;
-    //         }
-
-        
-    //     if (fd_out == -1) {
-    //             perror("Error opening output file");
-    //             exit(EXIT_FAILURE);
-    //             }
-    //     dup2(fd_out, STDOUT_FILENO);
-    //     execvp(args[0], args);
-    //     if (fd_out != STDOUT_FILENO) {
-    //             close(fd_out);
-    //         }    
-    //     printf("%s: Syntax error\n", args[0]);
-    //     exit(1);
-    //     } else if (child_pid > 0){
-    //         // Parent process
-    //         int status;
-    //         waitpid(child_pid, &status, 0);
-    //     } else {
-    //     perror("fork"); // Print an error message if fork fails
-    //     }
+void exe_inoutput_redirection(char in_file_name[], char out_file_name[], int outredirection){
     int fd_in;
-        fd_in = open(in_file_name, O_RDONLY);
-        if (fd_in == -1) {
-                perror("Error opening input file");
-                exit(EXIT_FAILURE);
-                }
-        if (dup2(fd_in, STDIN_FILENO) == -1) {
-                perror("Error redirecting input");
-                exit(EXIT_FAILURE);
-            }
-        close(fd_in);
+    fd_in = open(in_file_name, O_RDONLY);
+    if (fd_in == -1) {
+        perror("Error opening input file");
+        exit(EXIT_FAILURE);
+        }
+    if (dup2(fd_in, STDIN_FILENO) == -1) {
+        perror("Error redirecting input");
+        exit(EXIT_FAILURE);
+        }
+    close(fd_in);
 
-        int fd_out = 0;
-        switch (outredirection)
-            {
-            case 1:
-                fd_out = open(out_file_name, O_CREAT|O_RDWR|O_TRUNC,0664);
-            case 2:
-                fd_out = open(out_file_name, O_CREAT|O_RDWR|O_APPEND,0664);
-            default:
-                break;
-            }
+    int fd_out = 0;
+    switch (outredirection)
+        {
+        case 1:
+            fd_out = open(out_file_name, O_CREAT|O_RDWR|O_TRUNC,0664);
+        case 2:
+            fd_out = open(out_file_name, O_CREAT|O_RDWR|O_APPEND,0664);
+        default:
+            break;
+        }
 
         
-        if (fd_out == -1) {
-                perror("Error opening output file");
-                exit(EXIT_FAILURE);
-                }
-        dup2(fd_out, STDOUT_FILENO);
-        close(fd_out);
-        //execvp(args[0], args);
-        // if (fd_out != STDOUT_FILENO) {
-        //         close(fd_out);
-        //     }    
-        //printf("%s: Syntax error\n", args[0]);
-        //exit(1);
+    if (fd_out == -1) {
+        perror("Error opening output file");
+        exit(EXIT_FAILURE);
+        }
+    dup2(fd_out, STDOUT_FILENO);
+    close(fd_out);
 }
 
 void exe_output_redirection(char out_file_name[], int outredirection){
-// void exe_output_redirection(char* args[], char out_file_name[], int outredirection){
-        //pid_t child_pid = fork();
-    //if (child_pid == 0) {
-        // Child process
-        int fd = 0;
-        switch (outredirection)
-            {
-            case 1:
-                fd = open(out_file_name, O_CREAT|O_RDWR|O_TRUNC,0664);
-            case 2:
-                fd = open(out_file_name, O_CREAT|O_RDWR|O_APPEND,0664);
-            default:
-                break;
-            }
+    int fd = 0;
+    switch (outredirection)
+        {
+        case 1:
+            fd = open(out_file_name, O_CREAT|O_RDWR|O_TRUNC,0664);
+        case 2:
+            fd = open(out_file_name, O_CREAT|O_RDWR|O_APPEND,0664);
+        default:
+            break;
+        }
 
         
         if (fd == -1) {
@@ -242,16 +186,7 @@ void exe_output_redirection(char out_file_name[], int outredirection){
         if (fd != STDOUT_FILENO) {
                 close(fd);
             }  
-        close(fd);  
-        // printf("%s: Syntax error\n", args[0]);
-        // exit(1);
-        // } else if (child_pid > 0){
-        //     // Parent process
-        //     int status;
-        //     waitpid(child_pid, &status, 0);
-        // } else {
-        // perror("fork"); // Print an error message if fork fails
-        // }
+        close(fd);
 }
 
 int main(void) {
@@ -262,21 +197,17 @@ int main(void) {
     char out_file_name[50];
     char in_file_name[50];
 
+    signal(SIGINT, ctrl_c_handler);
+
     printf("mumsh $ ");
     fflush(stdout);
     while (1) {
         if (fgets(input, sizeof(input), stdin) == NULL) {
             command_exit();
-            //break; // Exit on EOF (Ctrl-D)
+            // Exit on EOF (Ctrl-D)
         }
-        // if(input == EOF){
-        //     command_exit();
-        // }
         input[strcspn(input, "\n")] = '\0';
 
-        if (strcmp(input, "exit") == 0) {
-            command_exit();
-        }
         int argc = 0;
         int outredirection = 0;
         int inredirection = 0;
@@ -299,7 +230,35 @@ int main(void) {
                 sect = strtok(NULL,"|");
             }
         }
-        //printf("input: %s",input);
+        if (strcmp(input, "exit") == 0) {
+            command_exit();
+        }
+
+        int exe = 0;
+        int cd = 0;
+        if (strcmp(input, "pwd") == 0) {
+            command_pwd();
+            exe = 1;
+        }
+        if (pip == 1){
+            if(exe == 1){
+                if (strcmp(rest_input, "pwd") == 0) {
+                command_pwd();
+                } else {
+                    pip = 0;
+                    exe = 0;
+                    strcpy(input, rest_input);
+                }
+            } else {
+                if (strcmp(rest_input, "pwd") == 0) {
+                    pip = 0;
+                    command_pwd();
+                }
+            }
+        }
+
+
+       //printf("input: %s",input);
         readin(input, argv, argv_in, &argc, out_file_name, in_file_name, &outredirection, &inredirection);
         int argc_c = 0;
         char temp[1024];
@@ -309,10 +268,15 @@ int main(void) {
             args[argc_c++] = token;
             token = strtok(NULL, " ");
         }
-        args[argc_c] = NULL; // Null-terminate the argument list
+        args[argc_c] = NULL;
+        if(strcmp(argv, "cd") == 0){
+            command_cd(argv_in);
+            exe = 1;
+        }
 
+        
         // Execute the command
-        if (argc > 0) {
+        if (argc > 0 && exe == 0) {
             if(pip == 0){
                 pid_t child_pid;
                 if ((child_pid = fork()) == 0) {
@@ -334,7 +298,7 @@ int main(void) {
                     perror("fork");
                     } 
             } else if(pip == 1){
-                //Deal with pipeline
+                // Deal with pipeline
                 pid_t child_pid = fork();
 
                 if (child_pid == 0) {
@@ -360,7 +324,7 @@ int main(void) {
                     close(pipefd[1]); // close write port
                     dup2(pipefd[0], STDIN_FILENO);
 
-
+                    // deal with rest_input
                     memset(argv, '\0', sizeof(argv));
                     memset(argv_in, '\0', sizeof(argv_in));
                     memset(in_file_name, '\0', sizeof(in_file_name));
@@ -368,8 +332,7 @@ int main(void) {
                     memset(args, '\0', sizeof(args));
 
                     readin(rest_input, argv, argv_in, &argc, out_file_name, in_file_name, &outredirection, &inredirection);
-                    //printf("Arriving here readin\n");
-                    //printf("rest_input:%s\n",rest_input);
+                    
                     argc_c = 0;
                     memset(temp, '\0', sizeof(temp));
                     strcpy(temp, argv_in);
@@ -387,6 +350,7 @@ int main(void) {
                         } else if (outredirection != 0) {
                             exe_output_redirection(out_file_name, outredirection);
                         }
+                        
                         execvp(args[0], args);
                         close(pipefd[0]); // close write port
                         exit(0);
@@ -395,96 +359,10 @@ int main(void) {
                     int status;
                     waitpid(child_pid, &status, 0);
                     int err = WEXITSTATUS(status);
-            if (err) { 
-                printf("Error: %s\n", strerror(err));
-            }
+                    if (err) { 
+                        printf("Error: %s\n", strerror(err));
+                    }
                 }
-            //     int pipefd[2];
-            //     // Create a pipe
-            //     if (pipe(pipefd) == -1) {
-            //         perror("pipe");
-            //         return 1;
-            //     }
-            //     // Create the first child process
-            //     if ((child_pid = fork()) == 0) {
-            //         if (inredirection != 0 && outredirection != 0) {
-            //         exe_inoutput_redirection(in_file_name, out_file_name, outredirection);
-            //         } else if (inredirection != 0) {
-            //         exe_input_redirection(in_file_name);
-            //         } else if (outredirection != 0) {
-            //         exe_output_redirection(out_file_name, outredirection);
-            //         }
-            //         close(pipefd[0]);  // Close the read end of the pipe
-            //         // Redirect stdout to the write end of the pipe
-            //         dup2(pipefd[1], STDOUT_FILENO);
-            //         //printf("Arriving here ready to exe pip1\n");
-            //         //printf("STDOUT_FILENO for pip 11: %d\n", STDOUT_FILENO);
-            //         close(pipefd[1]);
-            //         //printf("STDOUT_FILENO for pip 12: %d\n", STDOUT_FILENO);
-            //         execvp(args[0], args);
-            //         //printf("STDOUT_FILENO for pip 13: %d\n", STDOUT_FILENO);
-            //         perror("execvp"); // Print an error message if execvp fails
-            //         exit(1); 
-            //     } else if (child_pid < 0) {
-            //         perror("fork");
-            //         }
-            //     memset(argv, '\0', sizeof(argv));
-            //     memset(argv_in, '\0', sizeof(argv_in));
-            //     memset(in_file_name, '\0', sizeof(in_file_name));
-            //     memset(out_file_name, '\0', sizeof(out_file_name));
-            //     memset(args, '\0', sizeof(args));
-
-            //     readin(rest_input, argv, argv_in, &argc, out_file_name, in_file_name, &outredirection, &inredirection);
-            //     //printf("Arriving here readin\n");
-            //     //printf("rest_input:%s\n",rest_input);
-            //     argc_c = 0;
-            //     memset(temp, '\0', sizeof(temp));
-            //     strcpy(temp, argv_in);
-            //     char *rest_token = strtok(temp, " ");
-            //     while (rest_token != NULL) {
-            //         args[argc_c++] = rest_token;
-            //         rest_token = strtok(NULL, " ");
-            //     }
-            //     args[argc_c] = NULL; // Null-terminate the argument list
-            //     // Create the second child process
-            //     if (child_pid == 0) {
-            //         if (inredirection != 0 && outredirection != 0) {
-            //             exe_inoutput_redirection(in_file_name, out_file_name, outredirection);
-            //         } else if (inredirection != 0) {
-            //             exe_input_redirection(in_file_name);
-            //         } else if (outredirection != 0) {
-            //             exe_output_redirection(out_file_name, outredirection);
-            //         }
-            //         close(pipefd[1]);  // Close the write end of the pipe
-
-            //         // Redirect stdin to the read end of the pipe
-            //         dup2(pipefd[0], STDIN_FILENO);
-            //         //printf("Arriving here ready to exe pip1\n");
-            //         //printf("STDOUT_FILENO: %d\n", STDOUT_FILENO);
-            //         close(pipefd[0]);
-            //         execvp(args[0], args);
-            //         perror("execvp"); // Print an error message if execvp fails
-            //         exit(1);
-            //         //printf("Child Process 2 (PID: %d)\n", getpid());
-            //     } else if (child_pid < 0) {
-            //         perror("fork");
-            //     } else{
-            //         int status;
-            //         printf("Arriving here readin\n");
-            //         //waitpid(child_pid_1, &status, 0); 
-            //         waitpid(child_pid, &status, 0);
-            //         printf("Arriving here readin\n");
-            //         int err = WEXITSTATUS(status);  
-            // if (err) { 
-            //     printf("Error: %s\n", strerror(err));
-            // } 
-            //     }
-                
-                // Wait for both child processes to finish
-                
-                //wait(NULL);
-                //wait(NULL);
-                //printf("Arriving here readin\n");
             }
         }
         
@@ -494,7 +372,6 @@ int main(void) {
         memset(in_file_name, '\0', sizeof(in_file_name));
         memset(out_file_name, '\0', sizeof(out_file_name));
         memset(args, '\0', sizeof(args));
-
         // for (int s = 0; s < MAX_INPUT_SIZE/2; s++) {
         // args[s] = NULL;
         // }
