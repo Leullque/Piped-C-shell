@@ -265,7 +265,7 @@ int main(void) {
     printf("mumsh $ ");
     fflush(stdout);
     while (1) {
-        if (fgets(input, sizeof(input), stdin) == EOF) {
+        if (fgets(input, sizeof(input), stdin) == NULL) {
             command_exit();
             //break; // Exit on EOF (Ctrl-D)
         }
