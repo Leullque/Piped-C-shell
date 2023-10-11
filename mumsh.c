@@ -258,14 +258,7 @@ int main(void) {
                     printf("error: missing program\n");
                     err = 1;
                 }
-            } else{
-                printf("error: missing program\n");
-                err = 1;
             }
-        }
-        else if (input[0] == '|'){
-            printf("error: missing program\n");
-            err = 1;
         }
         if (strcmp(input, "exit") == 0) {
             command_exit();
@@ -431,5 +424,6 @@ int main(void) {
 
     return 0;
 }
+
 
 
