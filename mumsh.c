@@ -263,7 +263,7 @@ int main(void) {
                 err = 1;
             }
         }
-        else if (temp_input == NULL){
+        else if (input[0] == '|'){
             printf("error: missing program\n");
             err = 1;
         }
@@ -431,4 +431,5 @@ int main(void) {
 
     return 0;
 }
+
 
