@@ -223,12 +223,13 @@ void exe_inoutput_redirection(char in_file_name[], char out_file_name[], int out
                 exit(EXIT_FAILURE);
                 }
         dup2(fd_out, STDOUT_FILENO);
-        execvp(args[0], args);
-        if (fd_out != STDOUT_FILENO) {
-                close(fd_out);
-            }    
-        printf("%s: Syntax error\n", args[0]);
-        exit(1);
+        close(fd_out);
+        //execvp(args[0], args);
+        // if (fd_out != STDOUT_FILENO) {
+        //         close(fd_out);
+        //     }    
+        //printf("%s: Syntax error\n", args[0]);
+        //exit(1);
 }
 
 void exe_output_redirection(char out_file_name[], int outredirection){
