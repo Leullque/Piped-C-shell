@@ -32,6 +32,7 @@ void command_cd(char argv_in[]){
     int exe = chdir(path);
     if (exe == -1){
         printf("%s: No such file or directory\n",path);
+        exit(EXIT_FAILURE);
     }
 }
 
@@ -89,7 +90,7 @@ char* out_file_name, char* in_file_name, int* outredirection, int* inredirection
        if(strcmp(argv_line[j],">") == 0){
         if (*outredirection != 0) {
             printf("error: duplicated output redirection\n");
-            exit(-1);
+            exit(EXIT_FAILURE);
         }
            strcpy(out_file_name , argv_line[j+1]);
            *outredirection = 1;
@@ -97,7 +98,7 @@ char* out_file_name, char* in_file_name, int* outredirection, int* inredirection
        }else if(strcmp(argv_line[j],">>") == 0){
         if (*outredirection != 0) {
             printf("error: duplicated output redirection\n");
-            exit(-1);
+            exit(EXIT_FAILURE);
         }
            strcpy(out_file_name , argv_line[j+1]);
            *outredirection = 2;
@@ -105,7 +106,7 @@ char* out_file_name, char* in_file_name, int* outredirection, int* inredirection
        }else if(strcmp(argv_line[j],"<") == 0){
         if (*inredirection != 0) {
             printf("error: duplicated input redirection\n");
-            exit(-1);
+            exit(EXIT_FAILURE);
         }
            strcpy(in_file_name , argv_line[j+1]);
            *inredirection = 1;
@@ -248,7 +249,7 @@ int main(void) {
                 sect = strtok(NULL,"|");
                 if(sect != NULL){
                     printf("error: missing program\n");
-                    exit(-1);
+                    exit(EXIT_FAILURE);
                 }
             }
         }
@@ -312,7 +313,7 @@ int main(void) {
                     exec = execvp(args[0], args);
                     if(exec == -1){
                         printf("non-exist: %s not found\n", args[0]);
-                        exit(-1);
+                        exit(EXIT_FAILURE);
                     }
                 
                     //perror("execvp");
@@ -338,7 +339,7 @@ int main(void) {
                 close(pipefd[0]); // close read port
                 if (outredirection != 0) {
                     printf("error: duplicated output redirection\n");
-                    exit(-1);
+                    exit(EXIT_FAILURE);
                     }
                 if (inredirection != 0) {
                     exe_input_redirection(in_file_name);
@@ -347,7 +348,7 @@ int main(void) {
                 exec = execvp(args[0], args);
                 if(exec == -1){
                     printf("non-exist: %s not found\n", args[0]);
-                    exit(-1);
+                    exit(EXIT_FAILURE);
                 }
                 close(pipefd[1]); // close write port
                 exit(0);
@@ -376,7 +377,7 @@ int main(void) {
 
                     if (inredirection != 0) {
                             printf("error: duplicated input redirection\n");
-                            exit(-1);
+                            exit(EXIT_FAILURE);
                         }
                     if (outredirection != 0) {
                             exe_output_redirection(out_file_name, outredirection);
@@ -385,7 +386,7 @@ int main(void) {
                         exec = execvp(args[0], args);
                         if(exec == -1){
                             printf("non-exist: %s not found\n", args[0]);
-                            exit(-1);
+                            exit(EXIT_FAILURE);
                         }
                         close(pipefd[0]); // close write port
                         exit(0);
@@ -393,11 +394,11 @@ int main(void) {
                 } else {
                     int status;
                     waitpid(child_pid, &status, 0);
-                    int err = WEXITSTATUS(status);
-                    if (err) { 
-                        printf("Error: %s\n", strerror(err));
-                        exit(-1);
-                    }
+                    // int err = WEXITSTATUS(status);
+                    // if (err) { 
+                    //     printf("Error: %s\n", strerror(err));
+                    //     exit(EXIT_FAILURE);
+                    // }
                 }
             }
         }
