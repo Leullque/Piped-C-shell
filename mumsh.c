@@ -32,7 +32,6 @@ void command_cd(char argv_in[]){
     int exe = chdir(path);
     if (exe == -1){
         printf("%s: No such file or directory\n",path);
-        exit(EXIT_FAILURE);
     }
 }
 
