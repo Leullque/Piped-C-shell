@@ -43,7 +43,7 @@ void ctrl_c_handler(int sig){
     }
 }
 
-void readin(char line_in[], char* argv, char* argv_in, int* argc,
+int readin(char line_in[], char* argv, char* argv_in, int* argc,
 char* out_file_name, char* in_file_name, int* outredirection, int* inredirection){
     //outputredirection= 1: > 2: >> 0: no;
    // First we read in array of string, including dealing with space
@@ -91,7 +91,8 @@ char* out_file_name, char* in_file_name, int* outredirection, int* inredirection
        if(strcmp(argv_line[j],">") == 0){
         if (*outredirection != 0) {
             printf("error: duplicated output redirection\n");
-            exit(EXIT_FAILURE);
+            //exit(-1);
+            //exit(EXIT_FAILURE);
         }
            strcpy(out_file_name , argv_line[j+1]);
            *outredirection = 1;
@@ -99,7 +100,8 @@ char* out_file_name, char* in_file_name, int* outredirection, int* inredirection
        }else if(strcmp(argv_line[j],">>") == 0){
         if (*outredirection != 0) {
             printf("error: duplicated output redirection\n");
-            exit(EXIT_FAILURE);
+            //return -1;
+            //exit(EXIT_FAILURE);
         }
            strcpy(out_file_name , argv_line[j+1]);
            *outredirection = 2;
@@ -107,7 +109,8 @@ char* out_file_name, char* in_file_name, int* outredirection, int* inredirection
        }else if(strcmp(argv_line[j],"<") == 0){
         if (*inredirection != 0) {
             printf("error: duplicated input redirection\n");
-            exit(EXIT_FAILURE);
+            //return -1;
+            //exit(EXIT_FAILURE);
         }
            strcpy(in_file_name , argv_line[j+1]);
            *inredirection = 1;
@@ -131,6 +134,7 @@ char* out_file_name, char* in_file_name, int* outredirection, int* inredirection
            
    }
    //argv_in[*argc] = NULL;
+   return 0;
 }
 
 void exe_input_redirection(char in_file_name[]){
@@ -282,7 +286,10 @@ int main(void) {
 
 
        //printf("input: %s",input);
-        readin(input, argv, argv_in, &argc, out_file_name, in_file_name, &outredirection, &inredirection);
+        int read_in = readin(input, argv, argv_in, &argc, out_file_name, in_file_name, &outredirection, &inredirection);
+        if(read_in == -1){
+            continue;
+        }
         int argc_c = 0;
         char temp[1024];
         strcpy(temp, argv_in);
@@ -296,6 +303,10 @@ int main(void) {
             command_cd(argv_in);
             exe = 1;
         }
+        if(outredirection != 0 && pip == 1){
+            printf("error: duplicated output redirection\n");
+            exe = 1;
+            }
 
         
         // Execute the command
@@ -338,10 +349,11 @@ int main(void) {
                 pid_t ppid = fork();
                 if (ppid == 0) {
                 close(pipefd[0]); // close read port
-                if (outredirection != 0) {
-                    printf("error: duplicated output redirection\n");
-                    exit(EXIT_FAILURE);
-                    }
+                // if (outredirection != 0) {
+                //     printf("error: duplicated output redirection\n");
+                //     exit(EXIT_FAILURE);
+                //     continue;
+                //     }
                 if (inredirection != 0) {
                     exe_input_redirection(in_file_name);
                     }
