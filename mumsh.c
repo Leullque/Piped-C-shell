@@ -91,6 +91,7 @@ char* out_file_name, char* in_file_name, int* outredirection, int* inredirection
        if(strcmp(argv_line[j],">") == 0){
         if (*outredirection != 0) {
             printf("error: duplicated output redirection\n");
+            return -1;
             //exit(-1);
             //exit(EXIT_FAILURE);
         }
@@ -100,7 +101,7 @@ char* out_file_name, char* in_file_name, int* outredirection, int* inredirection
        }else if(strcmp(argv_line[j],">>") == 0){
         if (*outredirection != 0) {
             printf("error: duplicated output redirection\n");
-            //return -1;
+            return -1;
             //exit(EXIT_FAILURE);
         }
            strcpy(out_file_name , argv_line[j+1]);
@@ -109,7 +110,7 @@ char* out_file_name, char* in_file_name, int* outredirection, int* inredirection
        }else if(strcmp(argv_line[j],"<") == 0){
         if (*inredirection != 0) {
             printf("error: duplicated input redirection\n");
-            //return -1;
+            return -1;
             //exit(EXIT_FAILURE);
         }
            strcpy(in_file_name , argv_line[j+1]);
@@ -287,9 +288,7 @@ int main(void) {
 
        //printf("input: %s",input);
         int read_in = readin(input, argv, argv_in, &argc, out_file_name, in_file_name, &outredirection, &inredirection);
-        if(read_in == -1){
-            continue;
-        }
+        
         int argc_c = 0;
         char temp[1024];
         strcpy(temp, argv_in);
@@ -310,7 +309,7 @@ int main(void) {
 
         
         // Execute the command
-        if (argc > 0 && exe == 0) {
+        if (argc > 0 && exe == 0 && read_in == 0) {
             int exec = 0;
             if(pip == 0){
                 pid_t child_pid;
