@@ -29,8 +29,10 @@ void command_cd(char argv_in[]){
     if (sect != NULL){
         strcpy(path,sect);
     }
-    chdir(path);
-    printf("%s: No such file or directory\n",path);
+    int exe = chdir(path);
+    if (exe == -1){
+        printf("%s: No such file or directory\n",path);
+    }
 }
 
 void ctrl_c_handler(int sig){
@@ -252,8 +254,9 @@ int main(void) {
         if (strcmp(input, "exit") == 0) {
             command_exit();
         }
-        // deal with pwd & pwd pipe
+
         int exe = 0;
+        int cd = 0;
         if (strcmp(input, "pwd") == 0) {
             command_pwd();
             exe = 1;
@@ -287,8 +290,6 @@ int main(void) {
             token = strtok(NULL, " ");
         }
         args[argc_c] = NULL;
-
-        // deal with cd
         if(strcmp(argv, "cd") == 0){
             command_cd(argv_in);
             exe = 1;
@@ -297,6 +298,7 @@ int main(void) {
         
         // Execute the command
         if (argc > 0 && exe == 0) {
+            int exec = 0;
             if(pip == 0){
                 pid_t child_pid;
                 if ((child_pid = fork()) == 0) {
@@ -307,8 +309,11 @@ int main(void) {
                         } else if (outredirection != 0) {
                         exe_output_redirection(out_file_name, outredirection);
                     }
-                    execvp(args[0], args);
-                    printf("non-exist: %s not found\n", args[0]);
+                    exec = execvp(args[0], args);
+                    if(exec == -1){
+                        printf("non-exist: %s not found\n", args[0]);
+                    }
+                
                     //perror("execvp");
                     exit(1);
                     } else if (child_pid > 0) {
@@ -330,15 +335,18 @@ int main(void) {
                 pid_t ppid = fork();
                 if (ppid == 0) {
                 close(pipefd[0]); // close read port
-                if (inredirection != 0 && outredirection != 0) {
-                    exe_inoutput_redirection(in_file_name, out_file_name, outredirection);
-                    } else if (inredirection != 0) {
+                if (outredirection != 0) {
+                    printf("error: duplicated output redirection\n");
+                    continue;
+                    }
+                if (inredirection != 0) {
                     exe_input_redirection(in_file_name);
-                    } else if (outredirection != 0) {
-                    exe_output_redirection(out_file_name, outredirection);
                     }
                 dup2(pipefd[1], STDOUT_FILENO);
-                execvp(args[0], args);
+                exec = execvp(args[0], args);
+                if(exec == -1){
+                    printf("non-exist: %s not found\n", args[0]);
+                }
                 close(pipefd[1]); // close write port
                 exit(0);
                 } else {
@@ -364,16 +372,18 @@ int main(void) {
                     }
                     args[argc_c] = NULL; // Null-terminate the argument list
 
-                    if (inredirection != 0 && outredirection != 0) {
-                            exe_inoutput_redirection(in_file_name, out_file_name, outredirection);
-                        } else if (inredirection != 0) {
-                            exe_input_redirection(in_file_name);
-                        } else if (outredirection != 0) {
+                    if (inredirection != 0) {
+                            printf("error: duplicated input redirection\n");
+                            continue;
+                        }
+                    if (outredirection != 0) {
                             exe_output_redirection(out_file_name, outredirection);
                         }
                         
-                        execvp(args[0], args);
-                        printf("non-exist: %s not found\n", args[0]);
+                        exec = execvp(args[0], args);
+                        if(exec == -1){
+                            printf("non-exist: %s not found\n", args[0]);
+                        }
                         close(pipefd[0]); // close write port
                         exit(0);
                     }
