@@ -30,6 +30,7 @@ void command_cd(char argv_in[]){
         strcpy(path,sect);
     }
     chdir(path);
+    printf("%s: No such file or directory\n",path);
 }
 
 void ctrl_c_handler(int sig){
@@ -84,14 +85,26 @@ char* out_file_name, char* in_file_name, int* outredirection, int* inredirection
    int k = 0;
    for(int j = 0; j < tot_argv;){
        if(strcmp(argv_line[j],">") == 0){
+        if (*outredirection != 0) {
+            printf("error: duplicated output redirection\n");
+            //exit(-1);
+        }
            strcpy(out_file_name , argv_line[j+1]);
            *outredirection = 1;
            j += 2;
        }else if(strcmp(argv_line[j],">>") == 0){
+        if (*outredirection != 0) {
+            printf("error: duplicated output redirection\n");
+            //exit(-1);
+        }
            strcpy(out_file_name , argv_line[j+1]);
            *outredirection = 2;
            j += 2;
        }else if(strcmp(argv_line[j],"<") == 0){
+        if (*inredirection != 0) {
+            printf("error: duplicated input redirection\n");
+            //exit(-1);
+        }
            strcpy(in_file_name , argv_line[j+1]);
            *inredirection = 1;
            j += 2;
@@ -119,7 +132,8 @@ char* out_file_name, char* in_file_name, int* outredirection, int* inredirection
 void exe_input_redirection(char in_file_name[]){
     int fd = open(in_file_name, O_RDONLY);
     if (fd == -1) {
-        perror("Error opening input file");
+        printf("%s: No such file or directory\n",in_file_name);
+        //perror("Error opening input file");
         exit(EXIT_FAILURE);
     }
     if (dup2(fd, STDIN_FILENO) == -1) {
@@ -134,7 +148,8 @@ void exe_inoutput_redirection(char in_file_name[], char out_file_name[], int out
     int fd_in;
     fd_in = open(in_file_name, O_RDONLY);
     if (fd_in == -1) {
-        perror("Error opening input file");
+        printf("%s: No such file or directory\n",in_file_name);
+        //perror("Error opening input file");
         exit(EXIT_FAILURE);
         }
     if (dup2(fd_in, STDIN_FILENO) == -1) {
@@ -156,7 +171,8 @@ void exe_inoutput_redirection(char in_file_name[], char out_file_name[], int out
 
         
     if (fd_out == -1) {
-        perror("Error opening output file");
+        printf("%s: Permission denied\n",out_file_name);
+        //perror("Error opening output file");
         exit(EXIT_FAILURE);
         }
     dup2(fd_out, STDOUT_FILENO);
@@ -177,14 +193,15 @@ void exe_output_redirection(char out_file_name[], int outredirection){
 
         
         if (fd == -1) {
-                perror("Error opening output file");
-                exit(EXIT_FAILURE);
-                }
+            printf("%s: Permission denied\n",out_file_name);
+            //perror("Error opening output file");
+            exit(EXIT_FAILURE);
+        }
         dup2(fd, STDOUT_FILENO);
         //execvp(args[0], args);
         if (fd != STDOUT_FILENO) {
-                close(fd);
-            }  
+            close(fd);
+        }  
         close(fd);
 }
 
@@ -227,6 +244,9 @@ int main(void) {
                 pip = 1;
                 strcpy(rest_input,sect);
                 sect = strtok(NULL,"|");
+                if(sect != NULL){
+                    printf("error: missing program\n");
+                }
             }
         }
         if (strcmp(input, "exit") == 0) {
@@ -234,6 +254,7 @@ int main(void) {
         }
 
         int exe = 0;
+        int cd = 0;
         if (strcmp(input, "pwd") == 0) {
             command_pwd();
             exe = 1;
@@ -286,7 +307,8 @@ int main(void) {
                         exe_output_redirection(out_file_name, outredirection);
                     }
                     execvp(args[0], args);
-                    perror("execvp");
+                    printf("non-exist: %s not found\n", args[0]);
+                    //perror("execvp");
                     exit(1);
                     } else if (child_pid > 0) {
                     // Parent process
@@ -350,6 +372,7 @@ int main(void) {
                         }
                         
                         execvp(args[0], args);
+                        printf("non-exist: %s not found\n", args[0]);
                         close(pipefd[0]); // close write port
                         exit(0);
                     }
