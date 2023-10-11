@@ -238,6 +238,7 @@ int main(void) {
         int inredirection = 0;
 
         int pip = 0;
+        int err = 0;
         char *sect;
         sect = NULL;
         char temp_input[1024];
@@ -255,7 +256,7 @@ int main(void) {
                 sect = strtok(NULL,"|");
                 if(sect != NULL){
                     printf("error: missing program\n");
-                    exit(EXIT_FAILURE);
+                    err = 1;
                 }
             }
         }
@@ -309,7 +310,7 @@ int main(void) {
 
         
         // Execute the command
-        if (argc > 0 && exe == 0 && read_in == 0) {
+        if (argc > 0 && exe == 0 && read_in == 0 && err == 0) {
             int exec = 0;
             if(pip == 0){
                 pid_t child_pid;
@@ -348,11 +349,6 @@ int main(void) {
                 pid_t ppid = fork();
                 if (ppid == 0) {
                 close(pipefd[0]); // close read port
-                // if (outredirection != 0) {
-                //     printf("error: duplicated output redirection\n");
-                //     exit(EXIT_FAILURE);
-                //     continue;
-                //     }
                 if (inredirection != 0) {
                     exe_input_redirection(in_file_name);
                     }
