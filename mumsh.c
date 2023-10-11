@@ -15,9 +15,8 @@ void command_exit(void){
 }
 
 void command_pwd(void){
-    int size = 1024;
-    char *buffer = malloc(size);
-    getcwd(buffer, size);
+    char *buffer = malloc(MAX_INPUT_SIZE);
+    getcwd(buffer, 1024);
     printf("%s\n", buffer);
     free(buffer);
 }
@@ -235,7 +234,6 @@ int main(void) {
         }
 
         int exe = 0;
-        int cd = 0;
         if (strcmp(input, "pwd") == 0) {
             command_pwd();
             exe = 1;
