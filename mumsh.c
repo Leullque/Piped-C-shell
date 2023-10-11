@@ -256,7 +256,6 @@ int main(void) {
         }
 
         int exe = 0;
-        int cd = 0;
         if (strcmp(input, "pwd") == 0) {
             command_pwd();
             exe = 1;
