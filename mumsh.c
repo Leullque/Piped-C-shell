@@ -252,7 +252,7 @@ int main(void) {
         if (strcmp(input, "exit") == 0) {
             command_exit();
         }
-
+        // deal with pwd & pwd pipe
         int exe = 0;
         if (strcmp(input, "pwd") == 0) {
             command_pwd();
@@ -287,6 +287,8 @@ int main(void) {
             token = strtok(NULL, " ");
         }
         args[argc_c] = NULL;
+
+        // deal with cd
         if(strcmp(argv, "cd") == 0){
             command_cd(argv_in);
             exe = 1;
