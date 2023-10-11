@@ -41,7 +41,7 @@ void ctrl_c_handler(int sig){
     }
 }
 
-void readin(char line_in[], char* argv, char* argv_in, int* argc,
+int readin(char line_in[], char* argv, char* argv_in, int* argc,
 char* out_file_name, char* in_file_name, int* outredirection, int* inredirection){
     //outputredirection= 1: > 2: >> 0: no;
    // First we read in array of string, including dealing with space
@@ -89,7 +89,7 @@ char* out_file_name, char* in_file_name, int* outredirection, int* inredirection
        if(strcmp(argv_line[j],">") == 0){
         if (*outredirection != 0) {
             printf("error: duplicated output redirection\n");
-            //exit(-1);
+            exit(-1);
         }
            strcpy(out_file_name , argv_line[j+1]);
            *outredirection = 1;
@@ -97,7 +97,7 @@ char* out_file_name, char* in_file_name, int* outredirection, int* inredirection
        }else if(strcmp(argv_line[j],">>") == 0){
         if (*outredirection != 0) {
             printf("error: duplicated output redirection\n");
-            //exit(-1);
+            exit(-1);
         }
            strcpy(out_file_name , argv_line[j+1]);
            *outredirection = 2;
@@ -105,7 +105,7 @@ char* out_file_name, char* in_file_name, int* outredirection, int* inredirection
        }else if(strcmp(argv_line[j],"<") == 0){
         if (*inredirection != 0) {
             printf("error: duplicated input redirection\n");
-            //exit(-1);
+            exit(-1);
         }
            strcpy(in_file_name , argv_line[j+1]);
            *inredirection = 1;
@@ -248,6 +248,7 @@ int main(void) {
                 sect = strtok(NULL,"|");
                 if(sect != NULL){
                     printf("error: missing program\n");
+                    exit(-1);
                 }
             }
         }
@@ -311,6 +312,7 @@ int main(void) {
                     exec = execvp(args[0], args);
                     if(exec == -1){
                         printf("non-exist: %s not found\n", args[0]);
+                        exit(-1);
                     }
                 
                     //perror("execvp");
@@ -336,7 +338,7 @@ int main(void) {
                 close(pipefd[0]); // close read port
                 if (outredirection != 0) {
                     printf("error: duplicated output redirection\n");
-                    continue;
+                    exit(-1);
                     }
                 if (inredirection != 0) {
                     exe_input_redirection(in_file_name);
@@ -345,6 +347,7 @@ int main(void) {
                 exec = execvp(args[0], args);
                 if(exec == -1){
                     printf("non-exist: %s not found\n", args[0]);
+                    exit(-1);
                 }
                 close(pipefd[1]); // close write port
                 exit(0);
@@ -373,7 +376,7 @@ int main(void) {
 
                     if (inredirection != 0) {
                             printf("error: duplicated input redirection\n");
-                            continue;
+                            exit(-1);
                         }
                     if (outredirection != 0) {
                             exe_output_redirection(out_file_name, outredirection);
@@ -382,6 +385,7 @@ int main(void) {
                         exec = execvp(args[0], args);
                         if(exec == -1){
                             printf("non-exist: %s not found\n", args[0]);
+                            exit(-1);
                         }
                         close(pipefd[0]); // close write port
                         exit(0);
@@ -392,6 +396,7 @@ int main(void) {
                     int err = WEXITSTATUS(status);
                     if (err) { 
                         printf("Error: %s\n", strerror(err));
+                        exit(-1);
                     }
                 }
             }
@@ -403,9 +408,6 @@ int main(void) {
         memset(in_file_name, '\0', sizeof(in_file_name));
         memset(out_file_name, '\0', sizeof(out_file_name));
         memset(args, '\0', sizeof(args));
-        // for (int s = 0; s < MAX_INPUT_SIZE/2; s++) {
-        // args[s] = NULL;
-        // }
         fflush(stdout);
         printf("mumsh $ ");
         fflush(stdout);
